@@ -1,6 +1,6 @@
 {
     'name': 'Farm Management System',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.1.2',
     'summary': 'Comprehensive farm management for Odoo 18',
     'description': """
         This module provides a complete Farm Management System for Odoo 18.

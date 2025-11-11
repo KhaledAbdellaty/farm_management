@@ -8,7 +8,19 @@
             <field name="sequence">10</field>
         </record>
         
+        <!-- Separate category for Accountant to avoid confusion -->
+        <record id="module_category_farm_accountant" model="ir.module.category">
+            <field name="name">Farm Accounting</field>
+            <field name="description">Read-only financial view of farm operations</field>
+            <field name="sequence">11</field>
+        </record>
+        
         <!-- Farm Management Security Groups -->
+        <!-- 
+            Farm User and Farm Manager are in the same category (radio buttons in UI).
+            Farm Manager implies Farm User (checking Manager auto-checks User).
+            Farm Accountant is in a separate category and should NOT be combined with User/Manager.
+        -->
         <record id="group_farm_user" model="res.groups">
             <field name="name">Farm User</field>
             <field name="category_id" ref="module_category_farm_management"/>
@@ -20,6 +32,13 @@
             <field name="category_id" ref="module_category_farm_management"/>
             <field name="implied_ids" eval="[(4, ref('group_farm_user'))]"/>
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+        <record id="group_farm_accountant" model="res.groups">
+            <field name="name">Farm Accountant (Read-Only)</field>
+            <field name="category_id" ref="module_category_farm_accountant"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="comment">Read-only access to farm operations for financial viewing. DO NOT assign Farm User group to accountants.</field>
         </record>
 
         <!-- Record Rules -->
