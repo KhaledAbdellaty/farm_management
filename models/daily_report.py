@@ -689,7 +689,6 @@ class DailyReport(models.Model):
                             'picking_id': move.picking_id.id,
                             'company_id': move.company_id.id,
                             'quantity': move.product_uom_qty,
-                            'reserved_quantity': move.reserved_availability,
                         }
                         self.env['stock.move.line'].create(move_line_vals)
                         
