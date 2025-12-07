@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="base.res_config_settings_view_form"/>
         <field name="arch" type="xml">
             <xpath expr="//form" position="inside">
-                <app data-string="Farm Management" string="Farm Management" name="farm_management">
+                <app data-string="Farm Management" string="Farm Management" name="Farm-Management-System">
                     <block title="Accounting Integration" name="farm_accounting_setting_container">
                         <setting id="farm_labor_expense_setting" string="Labor Expense Account" help="Default expense account for labor costs">
                             <div class="content-group">
