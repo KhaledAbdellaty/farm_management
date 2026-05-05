@@ -45,6 +45,7 @@
                         </group>
                         <group>
                             <field name="project_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="partner_id" options="{'no_create': True}" readonly="state != 'draft'"/>
                             <field name="farm_id" readonly="1"/>
                             <field name="field_id" readonly="1"/>
                             <field name="crop_id" readonly="1"/>

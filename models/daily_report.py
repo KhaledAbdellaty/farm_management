@@ -29,6 +29,17 @@ class DailyReport(models.Model):
     crop_id = fields.Many2one('farm.crop', related='project_id.crop_id', 
                            string='Crop', store=True, readonly=True)
     
+    # Default vendor for non-PO product lines — carried to analytic entries
+    # for vendor traceability. PO-backed lines already know their vendor.
+    partner_id = fields.Many2one(
+        'res.partner',
+        string='Default Vendor',
+        domain="[('supplier_rank', '>', 0)]",
+        tracking=True,
+        help='Vendor for non-PO operations on this report. '
+             'Passed to analytic entries so costs are traceable by supplier.',
+    )
+
     # Operation details
     operation_type = fields.Selection([
         ('preparation', 'Field Preparation'),
@@ -717,6 +728,18 @@ class DailyReport(models.Model):
             # 1. Product costs
             all_product_lines = report.labor_machinery_lines + report.other_product_lines
             for line in all_product_lines:
+                # Skip PO-backed labor/machinery lines — these already have
+                # analytic_distribution set on the vendor bill line created by
+                # _generate_vendor_bills_for_services(). Odoo will create the
+                # analytic entry automatically when the accountant posts the bill.
+                # Creating a direct analytic entry here would double-count the cost.
+                if line.line_type == 'labor_machinery' and line.purchase_order_line_id:
+                    _logger.info(
+                        "Skipping analytic entry for '%s' — cost will be posted via vendor bill",
+                        line.product_id.name,
+                    )
+                    continue
+
                 # Force recompute of actual cost to ensure it's properly calculated
                 line.with_context(force_write=True)._compute_actual_cost()
                 
@@ -872,24 +895,33 @@ class DailyReport(models.Model):
                     'product_id': line.product_id.id,
                     'product_uom_id': line.uom_id.id,
                     'daily_report_id': report.id,
+                    'category': 'vendor_bill',
+                    'ref': report.name,
+                    # user_id omitted here — set below paired with employee_id.
+                    # Writing user_id alone triggers hr_timesheet to recompute
+                    # employee_id; if no employee is found it becomes False and
+                    # Odoo clears project_id to satisfy the SQL constraint,
+                    # causing all Gross Margin rows to group under "None".
                 }
-                
-                # Add general account if available
+
+                # GL account — prefer product category expense account
                 if line.product_id.categ_id and line.product_id.categ_id.property_account_expense_categ_id:
                     entry_vals['general_account_id'] = line.product_id.categ_id.property_account_expense_categ_id.id
-                
-                # Add project_id if available
-                if report.project_id.project_id:
-                    entry_vals['project_id'] = report.project_id.project_id.id
+
+                # Partner — use report-level default vendor for non-PO lines
+                if report.partner_id:
+                    entry_vals['partner_id'] = report.partner_id.id
                 
                 # Log the values for debugging
                 _logger.info(f"Creating analytic entry with amount: {entry_vals['amount']}, product: {line.product_id.name}")
-                
-                # Create the entry
+
+                # Create WITHOUT project_id to bypass hr_timesheet.create()
+                # ValidationError ("Timesheets must be created with an active
+                # employee"). hr_timesheet.write() has no such restriction, so
+                # project_id is patched immediately after via write().
                 analytic_line = self.env['account.analytic.line'].create(entry_vals)
-                analytic_line.with_context(check_move_validity=False).write({
-                    'amount': analytic_amount
-                })
+                if report.project_id.project_id:
+                    analytic_line.write({'project_id': report.project_id.project_id.id})
 
 
             # Labor and machinery costs are now tracked through product lines
@@ -1075,8 +1107,79 @@ class DailyReport(models.Model):
         
         _logger.info(f"DEBUG: Created bill {vendor_bill.name} with partner {vendor_bill.partner_id.name}")
         _logger.info(f"Created vendor bill {vendor_bill.name} for {vendor.name} from daily report {self.name}")
-        
+
         return vendor_bill
+
+    # ── One-time data repair ──────────────────────────────────────────────────
+
+    @api.model
+    def action_repair_duplicate_analytic_entries(self):
+        """
+        Remove ghost analytic entries created by _create_analytic_entries()
+        for PO-backed labor/machinery lines before the duplication fix was applied.
+
+        Before the fix, marking a Daily Report as Done produced a direct analytic
+        line (daily_report_id set) for every labor/machinery line — even those
+        backed by a Purchase Order.  When the accountant later posted the vendor
+        bill, Odoo created a second analytic line linked to the bill move line
+        (move_line_id set), resulting in a double-counted cost.
+
+        Since the fix is now live, PO-backed labor/machinery lines no longer
+        generate analytic entries directly — entries are only created when the
+        vendor bill is posted.  Any remaining ghost entries (move_line_id = False,
+        daily_report_id set) for PO-backed lines are therefore safe to delete
+        unconditionally; waiting for a bill-backed entry to appear first would
+        leave the ghost in place and cause duplication when the bill is later posted.
+
+        Safe to run multiple times — already-cleaned databases are unaffected.
+        """
+        AnalyticLine = self.env['account.analytic.line']
+        to_delete = AnalyticLine
+
+        done_reports = self.search([('state', '=', 'done')])
+        for report in done_reports:
+            for line in report.labor_machinery_lines:
+                if not line.purchase_order_line_id:
+                    continue
+
+                # DR-created ghost entries for this report + product.
+                # Entries linked to a journal item (move_line_id set) are
+                # GL-backed (came from a vendor bill) and must not be touched.
+                dr_lines = AnalyticLine.search([
+                    ('daily_report_id', '=', report.id),
+                    ('product_id', '=', line.product_id.id),
+                    ('move_line_id', '=', False),
+                ])
+                if not dr_lines:
+                    continue
+
+                # The bug is fixed: PO-backed lines no longer generate direct
+                # DR analytic entries, so any ghost entry found here is safe to
+                # delete unconditionally.  Keeping it until a bill is posted
+                # would cause duplication the moment the bill is later posted.
+                to_delete |= dr_lines
+
+        count = len(to_delete)
+        if to_delete:
+            to_delete.unlink()
+            _logger.info(
+                "Repair duplicate analytic entries: removed %d ghost entries.", count
+            )
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Analytic Entries Repaired'),
+                'message': _(
+                    '%(count)d duplicate analytic entries removed. '
+                    'Gross Margin figures are now accurate.',
+                    count=count,
+                ) if count else _('No duplicate entries found. Database is already clean.'),
+                'type': 'success' if count else 'info',
+                'sticky': False,
+            },
+        }
 
 
 class StockMove(models.Model):
@@ -1749,10 +1852,10 @@ class DailyReportLine(models.Model):
         """Get display name for PO line selection"""
         if not po_line:
             return ''
-        
+
         po = po_line.order_id
         vendor = po.partner_id.name
         price = po_line.price_unit
         currency = po.currency_id.symbol or po.currency_id.name
-        
+
         return f"{po.name} - {vendor} - {price} {currency}"

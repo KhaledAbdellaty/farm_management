@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Repair Duplicate Analytic Entries
+        Removes ghost analytic lines created by Daily Report for PO-backed
+        labor/machinery lines before the duplication fix was applied.
+        Accessible from Farm Management > Configuration > Tools.
+    -->
+    <record id="action_repair_duplicate_analytic_entries" model="ir.actions.server">
+        <field name="name">Repair Duplicate Analytic Entries</field>
+        <field name="model_id" ref="farm_management.model_farm_daily_report"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_repair_duplicate_analytic_entries()
+        </field>
+    </record>
+</odoo>
