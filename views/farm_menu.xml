@@ -179,4 +179,11 @@
               sequence="10"
               groups="group_farm_manager"/>
 
+    <menuitem id="menu_farm_repair_invoice_analytic"
+              name="Repair Invoice-Backed Analytic Duplicates"
+              parent="menu_farm_tools"
+              action="action_repair_invoice_analytic_duplicates"
+              sequence="20"
+              groups="group_farm_manager"/>
+
 </odoo>

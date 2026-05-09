@@ -6,14 +6,42 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-20 11:45+0000\n"
-"PO-Revision-Date: 2025-10-20 11:45+0000\n"
+"POT-Creation-Date: 2026-05-09 19:59+0000\n"
+"PO-Revision-Date: 2026-05-09 19:59+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/account_move.py:0
+msgid " (Farm Report: %s)"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/daily_report.py:0
+msgid ""
+"%(count)d duplicate analytic entries removed. Gross Margin figures are now "
+"accurate."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cost_analysis.py:0
+msgid ""
+"%(count)d ghost analytic entries removed. Gross Margin now matches Actual "
+"Cost."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cost_analysis.py:0
+msgid "%(type)s: %(name)s"
+msgstr ""
 
 #. module: farm_management
 #. odoo-python
@@ -34,15 +62,68 @@ msgid "- %s: Requested %s %s, Available: %s %s\n"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid ""
+"<i class=\"fa fa-check-circle me-1\"/>\n"
+"                        This harvest batch is validated. The quantity has been added to warehouse inventory."
+msgstr ""
+
+#. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid "<i class=\"fa fa-check-circle me-2\" title=\"Success\" aria-label=\"Success\"/>"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid ""
+"<i class=\"fa fa-exclamation-triangle me-1\"/>\n"
+"                        The stock receipt has been created. Click <strong>Validate Receipt</strong>\n"
+"                        to confirm the quantity in inventory. This action cannot be undone."
+msgstr ""
+
+#. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid ""
-"<i class=\"fa fa-info-circle me-2\" title=\"Information\" aria-"
-"label=\"Information\"/>"
+"<i class=\"fa fa-exclamation-triangle me-2\" title=\"Warning\" aria-"
+"label=\"Warning\"/>"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"<i class=\"fa fa-info-circle me-1\"/>\n"
+"                                Add one row per harvest event. Fill in the date, quantity and price, then:"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid ""
+"<i class=\"fa fa-info-circle me-1\"/>\n"
+"                        Fill in the quantity and price, then click <strong>Create Stock Receipt</strong>.\n"
+"                        After reviewing the receipt, click <strong>Validate Receipt</strong> to add\n"
+"                        this harvest batch to warehouse inventory."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_kanban
+msgid "<span class=\"mx-1 text-muted\">–</span>"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_kanban
+msgid "<span class=\"mx-1 text-muted\">›</span>"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
+msgid "<span class=\"o_stat_text\">Journal Entry</span>"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
+msgid ""
+"<span class=\"o_stat_text\">Post to</span>\n"
+"                                <span class=\"o_stat_text\">Ledger</span>"
 msgstr ""
 
 #. module: farm_management
@@ -54,24 +135,51 @@ msgid ""
 msgstr ""
 
 #. module: farm_management
-#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_kanban
 msgid ""
-"<strong>Harvest Receipt Created:</strong> The harvest receipt is waiting for validation to update inventory.\n"
-"                            Click the button below to view and validate it."
+"<span class=\"text-muted\">\n"
+"                                        <i class=\"fa fa-cubes fa-fw me-1\"/>\n"
+"                                        <span>Yield</span>\n"
+"                                    </span>"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_kanban
+msgid ""
+"<span class=\"text-muted\">\n"
+"                                        <i class=\"fa fa-money fa-fw me-1\"/>\n"
+"                                        <span>Cost</span>\n"
+"                                    </span>"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_kanban
+msgid "<span> batches</span>)"
 msgstr ""
 
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid ""
-"<strong>Harvest Receipt Validated:</strong> The harvested crop has been "
-"added to inventory."
+"<strong>Harvested stock received in inventory.</strong>\n"
+"                        Total validated yield:"
 msgstr ""
 
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid ""
-"<strong>Warning:</strong> After confirming, the actual yield and price will be used \n"
-"                                        to update product stock and sales pricing information. These values cannot be changed later."
+"<strong>Pending harvest batches.</strong>\n"
+"                        Some batches have receipts not yet validated. Validate each receipt to update inventory and include the quantity in the project totals."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "A receipt has already been created for this batch."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
+msgid "Accounting"
 msgstr ""
 
 #. module: farm_management
@@ -94,6 +202,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_needaction
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_needaction
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_needaction
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_needaction
 msgid "Action Needed"
 msgstr ""
 
@@ -173,6 +282,11 @@ msgid "Actual Yield"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid "Additional Info"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__product_lines
 msgid "All Products Used"
 msgstr ""
@@ -195,13 +309,27 @@ msgid "Analytic Entries"
 msgstr ""
 
 #. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/daily_report.py:0
+msgid "Analytic Entries Repaired"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model,name:farm_management.model_account_analytic_line
+#: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__analytic_line_id
 msgid "Analytic Line"
 msgstr ""
 
 #. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__analytic_line_ids
 msgid "Analytic Lines"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cost_analysis__analytic_line_id
+msgid ""
+"Analytic line automatically created in the project analytic account for this"
+" cost entry"
 msgstr ""
 
 #. module: farm_management
@@ -274,12 +402,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_attachment_count
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_attachment_count
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_attachment_count
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_attachment_count
 msgid "Attachment Count"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__product_availability
 msgid "Availability"
 msgstr ""
@@ -294,30 +421,22 @@ msgid "Available"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__available_product_ids
 msgid "Available Products"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__available_po_lines
 msgid "Available Purchase Orders"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom_line__available_stock
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__available_stock
 msgid "Available Stock"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report_line__available_po_lines
 msgid "Available purchase orders for this product"
 msgstr ""
@@ -388,6 +507,16 @@ msgstr ""
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_form
 msgid "BOMs"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid "Batch Details"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_list
+msgid "Batches"
 msgstr ""
 
 #. module: farm_management
@@ -463,6 +592,14 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid ""
+"Cannot delete a validated harvest batch (%(date)s — %(qty)s %(uom)s). "
+"Validated batches are part of the stock history."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
 #: code:addons/farm_management/models/daily_report.py:0
 msgid "Cannot use cancelled purchase orders."
 msgstr ""
@@ -479,8 +616,25 @@ msgid "Certification"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Click <strong>Create Receipt</strong> to generate a stock receipt."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"Click <strong>Validate Receipt</strong> to move the crop into warehouse "
+"inventory."
+msgstr ""
+
+#. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_farm_kanban
 msgid "Code:"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__color
+msgid "Color"
 msgstr ""
 
 #. module: farm_management
@@ -491,6 +645,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__company_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__company_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__company_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__company_id
 msgid "Company"
 msgstr ""
 
@@ -512,6 +667,13 @@ msgstr ""
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 msgid "Confirm"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"Confirm moving to Sales stage. All stock receipts from validated harvest "
+"batches are already updated in inventory. Continue?"
 msgstr ""
 
 #. module: farm_management
@@ -568,23 +730,18 @@ msgstr ""
 #. module: farm_management
 #. odoo-python
 #: code:addons/farm_management/models/cost_analysis.py:0
-msgid "Cost date cannot be after project end date."
+msgid "Cost date cannot be after the project end date."
 msgstr ""
 
 #. module: farm_management
 #. odoo-python
 #: code:addons/farm_management/models/cost_analysis.py:0
-msgid "Cost date cannot be before project start date."
+msgid "Cost date cannot be before the project start date."
 msgstr ""
 
 #. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__cost_per_area
 msgid "Cost per Area"
-msgstr ""
-
-#. module: farm_management
-#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_kanban
-msgid "Cost:"
 msgstr ""
 
 #. module: farm_management
@@ -595,7 +752,37 @@ msgstr ""
 
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_list
+msgid "Create Receipt"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid "Create Sales Order"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid "Create Stock Receipt"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid ""
+"Create a stock receipt for this harvest batch? The crop will be moved to "
+"warehouse inventory once you validate the receipt."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"Create a stock receipt for this harvest batch? The harvested crop will be "
+"moved to warehouse inventory once validated."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Create stock receipt for this batch"
 msgstr ""
 
 #. module: farm_management
@@ -644,15 +831,8 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__create_uid
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__create_uid
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__create_uid
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__create_uid
 msgid "Created by"
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid ""
-"Created inventory adjustment for %(product)s, added %(qty)s %(uom)s to stock"
-" location."
 msgstr ""
 
 #. module: farm_management
@@ -666,7 +846,27 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__create_date
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__create_date
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__create_date
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__create_date
 msgid "Created on"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__credit_account_id
+msgid "Credit Account"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cost_analysis__credit_account_id
+msgid ""
+"Credit account for the generated journal entry (e.g. Accrued Expenses, "
+"Accounts Payable). Used only when no invoice or payment is linked."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
+msgid ""
+"Credit account for the journal entry (e.g. Accrued Expenses, Accounts "
+"Payable). Required only when no invoice or payment is linked."
 msgstr ""
 
 #. module: farm_management
@@ -686,6 +886,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom__crop_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__crop_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__crop_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__crop_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_bom_search
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_form
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_search
@@ -781,6 +982,7 @@ msgstr ""
 #: model:ir.model,name:farm_management.model_farm_cultivation_project
 #: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__project_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__project_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__project_id
 #: model:ir.model.fields,field_description:farm_management.field_sale_order__cultivation_project_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid "Cultivation Project"
@@ -821,6 +1023,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__currency_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__currency_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__currency_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__currency_id
 msgid "Currency"
 msgstr ""
 
@@ -847,9 +1050,7 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/account_move.py:0
 #: code:addons/farm_management/models/cost_analysis.py:0
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_account_analytic_line__daily_report_id
 #: model:ir.model.fields,field_description:farm_management.field_account_bank_statement_line__daily_report_id
 #: model:ir.model.fields,field_description:farm_management.field_account_move__daily_report_id
@@ -894,8 +1095,6 @@ msgid "Daily Reports Count"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/account_move.py:0
 #: model:ir.model.fields,help:farm_management.field_account_bank_statement_line__daily_report_id
 #: model:ir.model.fields,help:farm_management.field_account_move__daily_report_id
 msgid "Daily report that generated this vendor bill"
@@ -921,6 +1120,11 @@ msgstr ""
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_bom_search
 msgid "Default BOMs"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__partner_id
+msgid "Default Vendor"
 msgstr ""
 
 #. module: farm_management
@@ -966,6 +1170,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__display_name
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__display_name
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__display_name
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -981,6 +1186,11 @@ msgid "Documentation Images"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
+msgid "Documents"
+msgstr ""
+
+#. module: farm_management
 #. odoo-python
 #: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields.selection,name:farm_management.selection__farm_cultivation_project__state__done
@@ -993,8 +1203,15 @@ msgstr ""
 #. odoo-python
 #: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields.selection,name:farm_management.selection__farm_daily_report__state__draft
+#: model:ir.model.fields.selection,name:farm_management.selection__farm_harvest_batch__state__draft
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_search
 msgid "Draft"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cost_analysis.py:0
+msgid "Duplicates Removed"
 msgstr ""
 
 #. module: farm_management
@@ -1024,14 +1241,6 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid ""
-"Failed to automatically adjust inventory for product %(product)s. Please "
-"manually add %(qty)s %(uom)s to stock."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
 #: code:addons/farm_management/models/crop.py:0
 msgid ""
 "Failed to find or create required product category 'Agricultural'. Please "
@@ -1040,21 +1249,12 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
+#: code:addons/farm_management/models/harvest_batch.py:0
 msgid ""
-"Failed to validate the harvest receipt. Current state: %(state)s. Please "
-"check inventory settings and make sure all quantities are set correctly."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid ""
-"Failed to validate the harvest receipt: %(error)s\n"
-"Please make sure:\n"
-"1. The product is properly configured as stockable\n"
-"2. The source and destination locations are valid\n"
-"3. The unit of measure is properly set"
+"Failed to validate harvest receipt %(name)s:\n"
+"%(error)s\n"
+"\n"
+"Ensure the product is storable and all locations are correctly configured."
 msgstr ""
 
 #. module: farm_management
@@ -1078,12 +1278,23 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__farm_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__farm_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__farm_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__farm_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_search
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_search
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_search
 #: model_terms:ir.ui.view,arch_db:farm_management.view_farm_form
 #: model_terms:ir.ui.view,arch_db:farm_management.view_field_search
 msgid "Farm"
+msgstr ""
+
+#. module: farm_management
+#: model:res.groups,name:farm_management.group_farm_accountant
+msgid "Farm Accountant (Read-Only)"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.module.category,name:farm_management.module_category_farm_accountant
+msgid "Farm Accounting"
 msgstr ""
 
 #. module: farm_management
@@ -1172,8 +1383,6 @@ msgid "Farm code must be unique!"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
 #: model:ir.actions.act_window,name:farm_management.action_farm_farm
 #: model:ir.ui.menu,name:farm_management.menu_farm
 #: model:ir.ui.menu,name:farm_management.menu_farm_farm
@@ -1209,6 +1418,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__field_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__field_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__field_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__field_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_search
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_search
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_search
@@ -1289,6 +1499,11 @@ msgid "Financial"
 msgstr ""
 
 #. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__general_account_id
+msgid "Financial Account"
+msgstr ""
+
+#. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
 msgid "Financial Details"
 msgstr ""
@@ -1301,6 +1516,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_follower_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_follower_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_follower_ids
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_follower_ids
 msgid "Followers"
 msgstr ""
 
@@ -1312,6 +1528,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_partner_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_partner_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_partner_ids
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_partner_ids
 msgid "Followers (Partners)"
 msgstr ""
 
@@ -1332,8 +1549,6 @@ msgid "Forecast Report"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__forecasted_issue
 msgid "Forecasted Issue"
 msgstr ""
@@ -1345,8 +1560,20 @@ msgid "Fuel"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
+msgid ""
+"GL expense account (debit side). Auto-filled from invoice or payment. Select"
+" manually if no document is linked."
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cost_analysis__general_account_id
+msgid ""
+"GL expense account for this cost. Auto-filled from the linked invoice or "
+"payment. Select manually when no invoice or payment is linked."
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__vendor_bill_ids
 msgid "Generated Vendor Bills"
 msgstr ""
@@ -1390,42 +1617,65 @@ msgid "Harvest"
 msgstr ""
 
 #. module: farm_management
-#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
-msgid "Harvest Information"
-msgstr ""
-
-#. module: farm_management
-#: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__harvest_price
-msgid "Harvest Price"
+#: model:ir.model,name:farm_management.model_farm_harvest_batch
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid "Harvest Batch"
 msgstr ""
 
 #. module: farm_management
 #. odoo-python
 #: code:addons/farm_management/models/cultivation_project.py:0
-#: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__stock_picking_id
+#: model:ir.actions.act_window,name:farm_management.action_farm_harvest_batch
+#: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__harvest_batch_count
+#: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__harvest_batch_ids
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_list
+msgid "Harvest Batches"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__date
+msgid "Harvest Date"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__harvest_price
+msgid "Harvest Price (Weighted Avg)"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
 msgid "Harvest Receipt"
 msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Harvest Receipt Created"
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Harvest receipt %s created for %s %s of %s"
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
+#: code:addons/farm_management/models/harvest_batch.py:0
 msgid ""
-"Harvest receipt validated successfully. Product inventory updated.\n"
-"Product: %(product)s\n"
-"Added quantity: %(qty)s %(uom)s\n"
+"Harvest batch receipt %(picking)s created — %(qty)s %(uom)s of %(product)s @"
+" %(price)s (%(date)s)"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid ""
+"Harvest batch validated — %(qty)s %(uom)s of %(product)s added to inventory.\n"
+"Receipt: %(picking)s\n"
 "Current stock in %(location)s: %(current)s %(uom)s"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "Harvest price must be greater than zero."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "Harvest quantity must be greater than zero."
 msgstr ""
 
 #. module: farm_management
@@ -1444,6 +1694,16 @@ msgid "Harvesting"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Harvests"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_search
+msgid "Has Harvest Batches"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__has_message
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop__has_message
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom__has_message
@@ -1451,6 +1711,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__has_message
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__has_message
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__has_message
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__has_message
 msgid "Has Message"
 msgstr ""
 
@@ -1483,6 +1744,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__id
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__id
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__id
 msgid "ID"
 msgstr ""
 
@@ -1516,6 +1778,7 @@ msgstr ""
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report__message_needaction
 #: model:ir.model.fields,help:farm_management.field_farm_farm__message_needaction
 #: model:ir.model.fields,help:farm_management.field_farm_field__message_needaction
+#: model:ir.model.fields,help:farm_management.field_farm_harvest_batch__message_needaction
 msgid "If checked, new messages require your attention."
 msgstr ""
 
@@ -1539,12 +1802,12 @@ msgstr ""
 #: model:ir.model.fields,help:farm_management.field_farm_farm__message_has_sms_error
 #: model:ir.model.fields,help:farm_management.field_farm_field__message_has_error
 #: model:ir.model.fields,help:farm_management.field_farm_field__message_has_sms_error
+#: model:ir.model.fields,help:farm_management.field_farm_harvest_batch__message_has_error
+#: model:ir.model.fields,help:farm_management.field_farm_harvest_batch__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__image_ids
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 msgid "Images"
@@ -1657,6 +1920,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_is_follower
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_is_follower
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_is_follower
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_is_follower
 msgid "Is Follower"
 msgstr ""
 
@@ -1669,7 +1933,15 @@ msgstr ""
 
 #. module: farm_management
 #: model:ir.model,name:farm_management.model_account_move
+#: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__journal_entry_id
 msgid "Journal Entry"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cost_analysis__journal_entry_id
+msgid ""
+"Journal entry automatically generated for this cost when no invoice or "
+"payment is linked."
 msgstr ""
 
 #. module: farm_management
@@ -1743,6 +2015,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__write_uid
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__write_uid
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__write_uid
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__write_uid
 msgid "Last Updated by"
 msgstr ""
 
@@ -1757,12 +2030,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__write_date
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__write_date
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__write_date
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__write_date
 msgid "Last Updated on"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__line_type
 msgid "Line Type"
 msgstr ""
@@ -1830,12 +2102,6 @@ msgid "Manual Entry"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Manual inventory adjustment needed"
-msgstr ""
-
-#. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 msgid "Mark as Done"
@@ -1849,6 +2115,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_has_error
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_has_error
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_has_error
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_has_error
 msgid "Message Delivery error"
 msgstr ""
 
@@ -1860,6 +2127,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_ids
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_ids
 msgid "Messages"
 msgstr ""
 
@@ -1898,6 +2166,17 @@ msgid "New Project"
 msgstr ""
 
 #. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__activity_calendar_event_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_crop__activity_calendar_event_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom__activity_calendar_event_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__activity_calendar_event_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__activity_calendar_event_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_farm__activity_calendar_event_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_field__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__activity_date_deadline
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop__activity_date_deadline
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom__activity_date_deadline
@@ -1932,14 +2211,13 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
 #: code:addons/farm_management/models/daily_report.py:0
 msgid "No Physical Locations found to create farm location hierarchy."
 msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
+#: code:addons/farm_management/models/harvest_batch.py:0
 msgid "No Receipt"
 msgstr ""
 
@@ -1951,8 +2229,25 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "No harvest receipt has been created yet."
+#: code:addons/farm_management/models/daily_report.py:0
+msgid "No duplicate entries found. Database is already clean."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cost_analysis.py:0
+msgid "No duplicates found. Database is already clean."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.actions.act_window,help:farm_management.action_farm_harvest_batch
+msgid "No harvest batches yet."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "No incoming receipt operation type found for the warehouse."
 msgstr ""
 
 #. module: farm_management
@@ -1994,8 +2289,14 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "No receipt picking type found for warehouse."
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "No receipt found for this batch."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "No receipt has been created for this batch yet."
 msgstr ""
 
 #. module: farm_management
@@ -2006,8 +2307,8 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
 #: code:addons/farm_management/models/daily_report.py:0
+#: code:addons/farm_management/models/harvest_batch.py:0
 msgid "No stock location found in warehouse."
 msgstr ""
 
@@ -2026,9 +2327,17 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/crop.py:0
 #: code:addons/farm_management/models/cultivation_project.py:0
+msgid ""
+"No validated harvest batches found. Please validate at least one harvest "
+"batch receipt before creating a sales order."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/crop.py:0
 #: code:addons/farm_management/models/daily_report.py:0
+#: code:addons/farm_management/models/harvest_batch.py:0
 msgid "No warehouse found for this company."
 msgstr ""
 
@@ -2055,6 +2364,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__notes
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__notes
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__notes
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__notes
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_bom_form
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_form
@@ -2073,6 +2383,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_needaction_counter
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_needaction_counter
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_needaction_counter
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_needaction_counter
 msgid "Number of Actions"
 msgstr ""
 
@@ -2089,6 +2400,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_has_error_counter
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_has_error_counter
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_has_error_counter
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_has_error_counter
 msgid "Number of errors"
 msgstr ""
 
@@ -2100,6 +2412,7 @@ msgstr ""
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report__message_needaction_counter
 #: model:ir.model.fields,help:farm_management.field_farm_farm__message_needaction_counter
 #: model:ir.model.fields,help:farm_management.field_farm_field__message_needaction_counter
+#: model:ir.model.fields,help:farm_management.field_farm_harvest_batch__message_needaction_counter
 msgid "Number of messages requiring action"
 msgstr ""
 
@@ -2111,6 +2424,7 @@ msgstr ""
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report__message_has_error_counter
 #: model:ir.model.fields,help:farm_management.field_farm_farm__message_has_error_counter
 #: model:ir.model.fields,help:farm_management.field_farm_field__message_has_error_counter
+#: model:ir.model.fields,help:farm_management.field_farm_harvest_batch__message_has_error_counter
 msgid "Number of messages with delivery error"
 msgstr ""
 
@@ -2120,6 +2434,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__observation
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 msgid "Observations"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Open the stock receipt"
 msgstr ""
 
 #. module: farm_management
@@ -2133,6 +2452,13 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__operation_type
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_search
 msgid "Operation Type"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cost_analysis__product_id
+msgid ""
+"Optional. Product or service this cost relates to. Auto-fills description "
+"and unit of measure when selected."
 msgstr ""
 
 #. module: farm_management
@@ -2171,8 +2497,6 @@ msgid "Owner"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__po_fields_visible
 msgid "PO Fields Visible"
 msgstr ""
@@ -2183,8 +2507,6 @@ msgid "PO Price"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__po_unit_price
 msgid "PO Unit Price"
 msgstr ""
@@ -2212,6 +2534,13 @@ msgstr ""
 #: code:addons/farm_management/models/cost_analysis.py:0
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_search
 msgid "Pesticides"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid ""
+"Physical Locations root not found. Cannot create farm location hierarchy."
 msgstr ""
 
 #. module: farm_management
@@ -2250,8 +2579,35 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
+#: code:addons/farm_management/models/cultivation_project.py:0
+msgid ""
+"Please create and validate at least one harvest batch before moving to the "
+"Sales stage. Use the Harvest Batches tab to record each harvest event and "
+"validate its stock receipt."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "Please create the receipt before validating."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
 #: code:addons/farm_management/models/daily_report.py:0
 msgid "Please select a product first"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cultivation_project.py:0
+msgid "Please set the Yield Unit of Measure before creating a sales order."
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cultivation_project.py:0
+msgid "Please set the Yield Unit of Measure on the project before proceeding."
 msgstr ""
 
 #. module: farm_management
@@ -2264,53 +2620,6 @@ msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Please specify a valid harvest price before creating a sales order."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Please specify a valid harvest price before proceeding to sales."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Please specify the actual harvest yield before proceeding to sales."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Please specify the actual yield before creating a sales order."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid ""
-"Please specify the yield unit of measure before creating a sales order."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Please specify the yield unit of measure before proceeding to sales."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid ""
-"Please verify harvest stock receipt for project %(code)s - %(name)s.\n"
-"Product: %(product)s\n"
-"Expected increase: %(qty)s %(uom)s\n"
-"Please ensure this quantity has been properly received in inventory."
-msgstr ""
-
-#. module: farm_management
-#. odoo-python
 #: code:addons/farm_management/models/cost_analysis.py:0
 #: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields.selection,name:farm_management.selection__farm_cultivation_project__yield_quality__poor
@@ -2319,19 +2628,36 @@ msgid "Poor"
 msgstr ""
 
 #. module: farm_management
-#: model:ir.model.fields,help:farm_management.field_farm_cultivation_project__harvest_price
-msgid "Price per unit of harvested crop"
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__price_unit
+msgid "Price / Unit"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_harvest_batch__price_unit
+msgid "Price per unit of yield for this harvest batch"
 msgstr ""
 
 #. module: farm_management
 #. odoo-python
 #: code:addons/farm_management/models/crop.py:0
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop__product_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom_line__product_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__product_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 msgid "Product"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid ""
+"Product '%s' is not a storable product. Only storable products can generate "
+"inventory receipts."
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__product_id
+msgid "Product / Service"
 msgstr ""
 
 #. module: farm_management
@@ -2396,8 +2722,6 @@ msgid ""
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report_line__available_product_ids
 msgid "Products that have available purchase order lines"
 msgstr ""
@@ -2463,16 +2787,12 @@ msgid "Property Value"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__purchase_order_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 msgid "Purchase Order"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__purchase_order_line_id
 msgid "Purchase Order Line"
 msgstr ""
@@ -2483,8 +2803,6 @@ msgid "Purchase Orders"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report_line__purchase_order_line_id
 msgid "Purchase order line computed from selected PO and product"
 msgstr ""
@@ -2495,11 +2813,10 @@ msgid "Purchases"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__quantity
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom_line__quantity
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__quantity
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__quantity
 msgid "Quantity"
 msgstr ""
 
@@ -2528,7 +2845,25 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__rating_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__rating_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__rating_ids
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__rating_ids
 msgid "Ratings"
+msgstr ""
+
+#. module: farm_management
+#: model:res.groups,comment:farm_management.group_farm_accountant
+msgid ""
+"Read-only access to farm operations for financial viewing. DO NOT assign "
+"Farm User group to accountants."
+msgstr ""
+
+#. module: farm_management
+#: model:ir.module.category,description:farm_management.module_category_farm_accountant
+msgid "Read-only financial view of farm operations"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields.selection,name:farm_management.selection__farm_harvest_batch__state__receipt_created
+msgid "Receipt Created"
 msgstr ""
 
 #. module: farm_management
@@ -2544,6 +2879,12 @@ msgstr ""
 #. module: farm_management
 #: model_terms:ir.actions.act_window,help:farm_management.action_farm_daily_report
 msgid "Record daily farm operations and track crop progress."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.actions.act_window,help:farm_management.action_farm_harvest_batch
+msgid ""
+"Record each harvest event here. Each batch generates its own stock receipt."
 msgstr ""
 
 #. module: farm_management
@@ -2571,6 +2912,18 @@ msgstr ""
 #. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__project_id
 msgid "Related Project"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.actions.server,name:farm_management.action_repair_duplicate_analytic_entries
+#: model:ir.ui.menu,name:farm_management.menu_farm_repair_analytic
+msgid "Repair Duplicate Analytic Entries"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.actions.server,name:farm_management.action_repair_invoice_analytic_duplicates
+#: model:ir.ui.menu,name:farm_management.menu_farm_repair_invoice_analytic
+msgid "Repair Invoice-Backed Analytic Duplicates"
 msgstr ""
 
 #. module: farm_management
@@ -2620,6 +2973,11 @@ msgid "Responsible User"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid "Result"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__revenue
 msgid "Revenue"
 msgstr ""
@@ -2638,6 +2996,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__message_has_sms_error
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__message_has_sms_error
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__message_has_sms_error
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr ""
 
@@ -2654,6 +3013,11 @@ msgstr ""
 #: code:addons/farm_management/models/cultivation_project.py:0
 #: model:ir.model,name:farm_management.model_sale_order
 msgid "Sales Order"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model,name:farm_management.model_sale_order_line
+msgid "Sales Order Line"
 msgstr ""
 
 #. module: farm_management
@@ -2718,8 +3082,6 @@ msgid "Seeds/Seedlings"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report_line__purchase_order_id
 msgid "Select purchase order for labor/machinery services"
 msgstr ""
@@ -2745,6 +3107,11 @@ msgstr ""
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid "Set to Draft"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_form
+msgid "Source"
 msgstr ""
 
 #. module: farm_management
@@ -2806,6 +3173,7 @@ msgstr ""
 #: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__state
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__state
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__state
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_search
 #: model_terms:ir.ui.view,arch_db:farm_management.view_field_search
 msgid "Status"
@@ -2853,6 +3221,11 @@ msgid "Stock Products"
 msgstr ""
 
 #. module: farm_management
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__picking_id
+msgid "Stock Receipt"
+msgstr ""
+
+#. module: farm_management
 #. odoo-python
 #: code:addons/farm_management/models/cost_analysis.py:0
 msgid "Storage"
@@ -2860,7 +3233,25 @@ msgstr ""
 
 #. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom_line__subtotal
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__subtotal
 msgid "Subtotal"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cultivation_project__actual_yield
+msgid "Sum of all validated harvest batch quantities."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Sum of all validated harvest batches"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cost_analysis__partner_id
+msgid ""
+"Supplier or partner for this cost. Auto-filled from the linked invoice or "
+"payment."
 msgstr ""
 
 #. module: farm_management
@@ -2894,6 +3285,12 @@ msgid "The BOM crop must match the project crop."
 msgstr ""
 
 #. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "The crop linked to this project has no product configured."
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,help:farm_management.field_sale_order__cultivation_project_id
 msgid "The cultivation project this sale order is related to"
 msgstr ""
@@ -2916,14 +3313,15 @@ msgid ""
 msgstr ""
 
 #. module: farm_management
-#: model:ir.model.fields,help:farm_management.field_farm_cultivation_project__stock_picking_id
-msgid "The receipt created when harvested crop is moved to inventory"
+#. odoo-python
+#: code:addons/farm_management/models/daily_report.py:0
+msgid "The selected purchase order must contain the selected product."
 msgstr ""
 
 #. module: farm_management
 #. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
-msgid "The selected purchase order must contain the selected product."
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "This batch has already been validated."
 msgstr ""
 
 #. module: farm_management
@@ -2941,6 +3339,25 @@ msgid ""
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"This will create a sales order using the total validated yield and weighted "
+"average price across all harvest batches. Continue?"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"This will create a sales order using the total validated yield and weighted "
+"average price. Continue?"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.ui.menu,name:farm_management.menu_farm_tools
+msgid "Tools"
+msgstr ""
+
+#. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cost_analysis_list
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_bom_form
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
@@ -2954,8 +3371,6 @@ msgid "Total Area (Feddan)"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__total_bill_amount
 msgid "Total Bill Amount"
 msgstr ""
@@ -2964,6 +3379,7 @@ msgstr ""
 #. odoo-python
 #: code:addons/farm_management/models/crop_bom.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom__total_cost
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_list
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_list
 msgid "Total Cost"
@@ -2977,6 +3393,16 @@ msgid "Total Irrigation Hours"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_list
+msgid "Total Profit"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_list
+msgid "Total Revenue"
+msgstr ""
+
+#. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
 msgid "Total Tax"
 msgstr ""
@@ -2987,6 +3413,12 @@ msgid "Total Untaxed"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_list
+msgid "Total Value"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,help:farm_management.field_farm_cultivation_project__bom_total_cost
 msgid "Total cost from the selected BOM"
 msgstr ""
@@ -2994,6 +3426,12 @@ msgstr ""
 #. module: farm_management
 #: model:ir.model.fields,help:farm_management.field_farm_cultivation_project__total_irrigation_hours
 msgid "Total hours spent on irrigation for this project"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cultivation_project.py:0
+msgid "Total validated yield is zero. Nothing to sell."
 msgstr ""
 
 #. module: farm_management
@@ -3037,11 +3475,11 @@ msgstr ""
 #. module: farm_management
 #. odoo-python
 #: code:addons/farm_management/models/crop.py:0
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__uom_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop__uom_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_crop_bom_line__uom_id
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__uom_id
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__uom_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_crop_search
 msgid "Unit of Measure"
 msgstr ""
@@ -3059,6 +3497,48 @@ msgid "Used in Farm"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_list
+msgid "Validate Receipt"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Validate stock receipt — updates on-hand inventory"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"Validate the receipt for this harvest batch? This will permanently add the "
+"quantity to your warehouse stock and cannot be undone."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+msgid ""
+"Validate this harvest receipt? This will permanently add the quantity to "
+"your warehouse stock and cannot be undone."
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields.selection,name:farm_management.selection__farm_harvest_batch__state__validated
+msgid "Validated"
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Validated Totals"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/harvest_batch.py:0
+msgid "Validation did not complete. Receipt is still in state: %(state)s."
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,help:farm_management.field_farm_crop_bom_line__unit_cost
 msgid ""
 "Value of the product (automatically computed in AVCO).\n"
@@ -3067,16 +3547,17 @@ msgid ""
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report_line__vendor_id
 #: model_terms:ir.ui.view,arch_db:farm_management.view_daily_report_form
 msgid "Vendor"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
+#: model:ir.model.fields,field_description:farm_management.field_farm_cost_analysis__partner_id
+msgid "Vendor / Partner"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__vendor_bill_count
 msgid "Vendor Bills Count"
 msgstr ""
@@ -3088,37 +3569,27 @@ msgid "Vendor bill %s created for %s (Amount: %s)"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/daily_report.py:0
+#: model:ir.model.fields,help:farm_management.field_farm_daily_report__partner_id
+msgid ""
+"Vendor for non-PO operations on this report. Passed to analytic entries so "
+"costs are traceable by supplier."
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report_line__vendor_id
 msgid "Vendor from Purchase Order"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "Verify harvest stock receipt"
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "View Harvest Batches"
 msgstr ""
 
 #. module: farm_management
 #: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_form
+#: model_terms:ir.ui.view,arch_db:farm_management.view_farm_harvest_batch_list
 msgid "View Receipt"
-msgstr ""
-
-#. module: farm_management
-#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
-msgid ""
-"Warning: This will confirm the harvest yield and price, which will affect "
-"product stock and sales price. This action cannot be undone. Are you sure "
-"you want to continue?"
-msgstr ""
-
-#. module: farm_management
-#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
-msgid ""
-"Warning: This will create a sales order using the current harvest yield and "
-"price. These values will affect product stock and sales price. Are you sure "
-"you want to continue?"
 msgstr ""
 
 #. module: farm_management
@@ -3134,6 +3605,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:farm_management.field_farm_daily_report__website_message_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_farm__website_message_ids
 #: model:ir.model.fields,field_description:farm_management.field_farm_field__website_message_ids
+#: model:ir.model.fields,field_description:farm_management.field_farm_harvest_batch__website_message_ids
 msgid "Website Messages"
 msgstr ""
 
@@ -3145,6 +3617,7 @@ msgstr ""
 #: model:ir.model.fields,help:farm_management.field_farm_daily_report__website_message_ids
 #: model:ir.model.fields,help:farm_management.field_farm_farm__website_message_ids
 #: model:ir.model.fields,help:farm_management.field_farm_field__website_message_ids
+#: model:ir.model.fields,help:farm_management.field_farm_harvest_batch__website_message_ids
 msgid "Website communication history"
 msgstr ""
 
@@ -3153,6 +3626,22 @@ msgstr ""
 #: code:addons/farm_management/models/daily_report.py:0
 #: model:ir.model.fields.selection,name:farm_management.selection__farm_daily_report__operation_type__weeding
 msgid "Weeding"
+msgstr ""
+
+#. module: farm_management
+#. odoo-python
+#: code:addons/farm_management/models/cultivation_project.py:0
+msgid "Weighted average harvest price is zero. Check your batch prices."
+msgstr ""
+
+#. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Weighted average price across all validated batches"
+msgstr ""
+
+#. module: farm_management
+#: model:ir.model.fields,help:farm_management.field_farm_cultivation_project__harvest_price
+msgid "Weighted average price across all validated harvest batches."
 msgstr ""
 
 #. module: farm_management
@@ -3171,14 +3660,20 @@ msgid "Yield Quality"
 msgstr ""
 
 #. module: farm_management
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "Yield Settings"
+msgstr ""
+
+#. module: farm_management
 #: model:ir.model.fields,field_description:farm_management.field_farm_cultivation_project__yield_uom_id
 msgid "Yield UoM"
 msgstr ""
 
 #. module: farm_management
-#. odoo-python
-#: code:addons/farm_management/models/cultivation_project.py:0
-msgid "You cannot modify the following fields after harvest confirmation: %s"
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid ""
+"You can record multiple partial harvests — each creates its own receipt.\n"
+"                                The <em>Actual Yield</em> and <em>Weighted Avg Price</em> are updated automatically."
 msgstr ""
 
 #. module: farm_management
@@ -3191,8 +3686,8 @@ msgid ""
 msgstr ""
 
 #. module: farm_management
-#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_kanban
-msgid "to"
+#: model_terms:ir.ui.view,arch_db:farm_management.view_cultivation_project_form
+msgid "at weighted avg price"
 msgstr ""
 
 #. module: farm_management

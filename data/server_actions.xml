@@ -14,4 +14,18 @@
 action = model.action_repair_duplicate_analytic_entries()
         </field>
     </record>
+
+    <!--
+        Repair Invoice-Backed Analytic Duplicates
+        Removes ghost analytic lines from cost analysis records whose invoice
+        is already posted (bill's own analytic line is the authoritative one).
+    -->
+    <record id="action_repair_invoice_analytic_duplicates" model="ir.actions.server">
+        <field name="name">Repair Invoice-Backed Analytic Duplicates</field>
+        <field name="model_id" ref="farm_management.model_farm_cost_analysis"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_repair_invoice_analytic_duplicates()
+        </field>
+    </record>
 </odoo>

@@ -253,6 +253,45 @@ class CostAnalysis(models.Model):
             if not account:
                 continue
 
+            # ── Duplication guards ────────────────────────────────────────────
+            # Guard 1: Invoice-backed cost.
+            # A posted vendor bill creates its own authoritative analytic line
+            # (move_line_id set) via analytic_distribution.  Defer to the
+            # bill's line ONLY when it actually has one for this project account.
+            # If the bill was posted without analytic_distribution (e.g. a PO
+            # bill where the distribution was never set), fall through and keep
+            # the cost-analysis analytic line so no entry goes missing.
+            if cost.invoice_id and cost.invoice_id.state == 'posted':
+                bill_analytic = cost.invoice_id.line_ids.analytic_line_ids.filtered(
+                    lambda l: l.account_id == account
+                )
+                if bill_analytic:
+                    # Bill has authoritative analytic line — remove ghost and defer.
+                    if cost.analytic_line_id and not cost.analytic_line_id.move_line_id:
+                        cost.analytic_line_id.unlink()
+                        cost.with_context(skip_analytic_sync=True).write(
+                            {'analytic_line_id': False}
+                        )
+                    continue
+                # Bill is posted but has no analytic lines for this project account.
+                # Fall through to create / maintain the cost-analysis analytic line.
+
+            # Guard 2: Daily-report-sourced cost.
+            # When a cost analysis record is generated from a done Daily Report
+            # (source_type='daily_report'), _create_analytic_entries() has
+            # already posted an analytic line for that report.  Creating a
+            # second line here would double the cost in the analytic account.
+            if cost.source_type == 'daily_report' and cost.source_id:
+                dr = self.env['farm.daily.report'].browse(cost.source_id)
+                if dr.exists() and dr.analytic_line_ids:
+                    if cost.analytic_line_id and not cost.analytic_line_id.move_line_id:
+                        cost.analytic_line_id.unlink()
+                        cost.with_context(skip_analytic_sync=True).write(
+                            {'analytic_line_id': False}
+                        )
+                    continue
+            # ─────────────────────────────────────────────────────────────────
+
             label = _("%(type)s: %(name)s") % {
                 'type': cost.get_cost_type_label(),
                 'name': cost.cost_name,
@@ -294,6 +333,13 @@ class CostAnalysis(models.Model):
                 line = self.env['account.analytic.line'].create(vals)
                 if project_id:
                     line.write({'project_id': project_id})
+                    # hr_timesheet._timesheet_preprocess_get_accounts() injects
+                    # account_id into the write vals, triggering _timesheet_postprocess()
+                    # to recompute amount as standard_price × unit_amount.
+                    # Restore the correct cost amount to prevent it being zeroed out.
+                    line.with_context(check_move_validity=False).write(
+                        {'amount': vals['amount']}
+                    )
                 cost.with_context(skip_analytic_sync=True).write(
                     {'analytic_line_id': line.id}
                 )
@@ -301,6 +347,62 @@ class CostAnalysis(models.Model):
                     "Created analytic line %s for cost entry %s",
                     line.id, cost.name,
                 )
+
+    # ── One-time data repair ──────────────────────────────────────────────────
+
+    @api.model
+    def action_repair_invoice_analytic_duplicates(self):
+        """
+        Remove cost-analysis analytic lines that duplicate a posted invoice's
+        analytic line (Guard 1 in _sync_analytic_line).
+
+        Before the fix was in place, every farm.cost.analysis record with a
+        linked posted vendor bill had TWO analytic lines in the project account:
+          • one from _sync_analytic_line()  (no move_line_id)  ← ghost
+          • one from the posted bill         (move_line_id set) ← authoritative
+
+        This action finds and removes all remaining ghost lines.
+        Safe to run multiple times — already-cleaned databases are unaffected.
+        """
+        to_clean = self.search([
+            ('invoice_id.state', '=', 'posted'),
+            ('analytic_line_id', '!=', False),
+        ]).filtered(
+            lambda c: (
+                not c.analytic_line_id.move_line_id
+                # Only remove when the bill actually has its own analytic line
+                # for this project account; otherwise the cost-analysis line is
+                # the only entry and must be kept.
+                and c.invoice_id.line_ids.analytic_line_ids.filtered(
+                    lambda l: l.account_id == c.project_id.analytic_account_id
+                )
+            )
+        )
+
+        count = len(to_clean)
+        for cost in to_clean:
+            cost.analytic_line_id.unlink()
+            cost.with_context(skip_analytic_sync=True).write(
+                {'analytic_line_id': False}
+            )
+
+        _logger.info(
+            "Repair invoice analytic duplicates: removed %d ghost entries.", count
+        )
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Duplicates Removed'),
+                'message': _(
+                    '%(count)d ghost analytic entries removed. '
+                    'Gross Margin now matches Actual Cost.',
+                    count=count,
+                ) if count else _('No duplicates found. Database is already clean.'),
+                'type': 'success' if count else 'info',
+                'sticky': False,
+            },
+        }
 
     # ── Journal entry generation ──────────────────────────────────────────────
 
