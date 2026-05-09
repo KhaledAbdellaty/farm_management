@@ -29,6 +29,17 @@ class DailyReport(models.Model):
     crop_id = fields.Many2one('farm.crop', related='project_id.crop_id', 
                            string='Crop', store=True, readonly=True)
     
+    # Default vendor for non-PO product lines — carried to analytic entries
+    # for vendor traceability. PO-backed lines already know their vendor.
+    partner_id = fields.Many2one(
+        'res.partner',
+        string='Default Vendor',
+        domain="[('supplier_rank', '>', 0)]",
+        tracking=True,
+        help='Vendor for non-PO operations on this report. '
+             'Passed to analytic entries so costs are traceable by supplier.',
+    )
+
     # Operation details
     operation_type = fields.Selection([
         ('preparation', 'Field Preparation'),
@@ -717,149 +728,29 @@ class DailyReport(models.Model):
             # 1. Product costs
             all_product_lines = report.labor_machinery_lines + report.other_product_lines
             for line in all_product_lines:
-                # Force recompute of actual cost to ensure it's properly calculated
-                line.with_context(force_write=True)._compute_actual_cost()
-                
-                # Calculate the product cost - make sure it's never zero for used products
-                product_cost = line.actual_cost
-                if product_cost <= 0 and line.quantity > 0:
-                    # If actual cost is zero but product is used, use a fallback cost
-                    # Try to get a reasonable cost from the product's standard price
-                    product_cost = line.product_id.standard_price * line.quantity
-                    _logger.warning(f"Using fallback cost calculation for {line.product_id.name}: {product_cost}")
-                
-                # For products that have no cost elsewhere in the system, we need to ensure we use
-                # a minimal cost value to ensure analytic entries are created
-                if product_cost <= 0 and line.quantity > 0:
-                    # Set minimum default value (1.0 per unit) if all other cost calculations fail
-                    product_cost = line.quantity * 1.0
-                    _logger.warning(f"Using minimum default cost of 1.0/unit for {line.product_id.name}: {product_cost}")
-                
-                if product_cost <= 0:
-                    _logger.warning(f"Skipping analytic entry for product {line.product_id.name} with zero cost")
+                # Skip PO-backed labor/machinery lines — these already have
+                # analytic_distribution set on the vendor bill line created by
+                # _generate_vendor_bills_for_services(). Odoo will create the
+                # analytic entry automatically when the accountant posts the bill.
+                # Creating a direct analytic entry here would double-count the cost.
+                if line.line_type == 'labor_machinery' and line.purchase_order_line_id:
+                    _logger.info(
+                        "Skipping analytic entry for '%s' — cost will be posted via vendor bill",
+                        line.product_id.name,
+                    )
                     continue
-                    
-                # Look for validated stock moves for this product to get actual cost
-                stock_cost = 0.0
-                validated_moves = self.env['stock.move'].search([
-                    ('daily_report_id', '=', report.id),
-                    ('product_id', '=', line.product_id.id),
-                    ('state', '=', 'done')
-                ], order='date desc')
-                
-                if validated_moves:
-                    # Calculate actual cost from validated stock moves
-                    stock_qty = sum(move.product_uom_qty for move in validated_moves)
-                    if stock_qty > 0:
-                        # Try to get actual cost
-                        try:
-                            # Try different approaches to get the actual cost from stock moves in Odoo 18
-                            
-                            # First approach: Get cost from accounting entries
-                            _logger.info(f"Trying to calculate cost for {line.product_id.name}")
-                            for move in validated_moves:
-                                try:
-                                    if hasattr(move, 'account_move_ids') and move.account_move_ids:
-                                        _logger.info(f"Found account_move_ids for move {move.id}: {move.account_move_ids.ids}")
-                                        # Look for expense lines or credit lines in stock valuation
-                                        expense_lines = move.account_move_ids.mapped('line_ids').filtered(
-                                            lambda l: l.account_id.account_type in ('expense', 'asset_current')
-                                            and l.balance < 0  # Credit entries for stock valuation
-                                        )
-                                        if expense_lines:
-                                            move_cost = sum(abs(l.balance) for l in expense_lines)
-                                            _logger.info(f"Found expense lines with cost: {move_cost}")
-                                            stock_cost += move_cost
-                                except Exception as e:
-                                    _logger.error(f"Error accessing account move data: {str(e)}")
-                            
-                            _logger.info(f"Actual cost from account entries for {line.product_id.name}: {stock_cost}")
-                            
-                            # Second approach: Try to get from stock valuation layer if available
-                            if stock_cost <= 0:
-                                try:
-                                    # Check if the model exists before trying to use it
-                                    if 'stock.valuation.layer' in self.env:
-                                        StockValuationLayer = self.env['stock.valuation.layer']
-                                        layers = StockValuationLayer.search([
-                                            ('stock_move_id', 'in', validated_moves.ids)
-                                        ])
-                                        if layers:
-                                            # Get the absolute value as valuation layers can be negative for outgoing moves
-                                            stock_cost = sum(abs(layer.value) for layer in layers)
-                                            _logger.info(f"Stock valuation layers found: {len(layers)} with total value: {stock_cost}")
-                                            
-                                            # Ensure the cost is distributed correctly if quantities don't match
-                                            layer_qty = sum(layer.quantity for layer in layers)
-                                            if layer_qty and layer_qty != line.quantity:
-                                                unit_cost = stock_cost / abs(layer_qty)
-                                                stock_cost = unit_cost * line.quantity
-                                                _logger.info(f"Adjusting cost to match quantity {line.quantity}: {stock_cost}")
-                                except Exception as val_error:
-                                    _logger.error(f"Error getting valuation layers: {str(val_error)}")
-                            
-                            # Third approach: Try to get unit cost * quantity
-                            if stock_cost <= 0:
-                                try:
-                                    for move in validated_moves:
-                                        # Try various price attributes that might exist
-                                        unit_price = None
-                                        
-                                        # Try product_price_value_unit first (specific to Odoo 18)
-                                        if hasattr(move, 'product_price_value_unit') and move.product_price_value_unit:
-                                            unit_price = move.product_price_value_unit
-                                            _logger.info(f"Found product_price_value_unit: {unit_price}")
-                                        
-                                        # Then try price_unit
-                                        elif hasattr(move, 'price_unit') and move.price_unit:
-                                            unit_price = move.price_unit
-                                            _logger.info(f"Found price_unit: {unit_price}")
-                                            
-                                        # Calculate move cost if we found a price
-                                        if unit_price is not None:
-                                            qty = move.product_qty if hasattr(move, 'product_qty') else move.product_uom_qty
-                                            move_cost = abs(unit_price) * qty
-                                            _logger.info(f"Move {move.id} cost: {unit_price} * {qty} = {move_cost}")
-                                            stock_cost += move_cost
-                                            
-                                    _logger.info(f"Final cost from price_unit calculations: {stock_cost}")
-                                    
-                                    # Match to current line quantity
-                                    total_move_qty = sum(m.product_uom_qty for m in validated_moves)
-                                    if total_move_qty and total_move_qty != line.quantity:
-                                        unit_cost = stock_cost / total_move_qty
-                                        stock_cost = unit_cost * line.quantity
-                                        _logger.info(f"Adjusted cost to match line quantity: {stock_cost}")
-                                except Exception as price_error:
-                                    _logger.error(f"Error calculating cost from price_unit: {str(price_error)}")
-                            
-                            # Last resort: use standard price
-                            if stock_cost <= 0:
-                                std_price = line.product_id.standard_price or 0.0
-                                stock_cost = std_price * line.quantity
-                                _logger.info(f"Using standard price as last resort: {std_price} * {line.quantity} = {stock_cost}")
-                                
-                                # If standard price is also zero, use a minimal value to avoid zero costs
-                                if stock_cost <= 0 and line.quantity > 0:
-                                    stock_cost = line.quantity * 1.0  # Minimum cost of 1.0 per unit
-                                    _logger.info(f"Using minimum default cost of 1.0/unit: {stock_cost}")
-                        except Exception as e:
-                            _logger.error(f"Error calculating stock cost: {str(e)}")
-                            # Even in case of exceptions, try to get a reasonable cost
-                            stock_cost = (line.product_id.standard_price or 1.0) * line.quantity
-                
-                # Determine final cost - prefer actual cost from stock moves, then computed actual cost
-                if stock_cost > 0:
-                    analytic_amount = -stock_cost  # Negative for costs in analytic entries
-                    _logger.info(f"Using validated stock move cost for {line.product_id.name}: {stock_cost}")
-                elif line.actual_cost > 0:
-                    analytic_amount = -line.actual_cost
-                    _logger.info(f"Using computed actual cost for {line.product_id.name}: {line.actual_cost}")
-                else:
-                    # Fall back to product's standard price
-                    std_price = line.product_id.standard_price or 0.0
-                    analytic_amount = -(std_price * line.quantity)
-                    _logger.info(f"Using standard price for {line.product_id.name}: {std_price} x {line.quantity} = {std_price * line.quantity}")
+
+                # Recompute so the SVL-based cost is current before reading it.
+                line.with_context(force_write=True)._compute_actual_cost()
+
+                analytic_amount = -line.actual_cost
+
+                if not analytic_amount:
+                    _logger.warning(
+                        "Skipping analytic entry for '%s' — cost is zero after recompute",
+                        line.product_id.name,
+                    )
+                    continue
                 
                 # Create the analytic entry
                 operation_type_name = dict(report._fields['operation_type'].selection).get(report.operation_type, 'Operation')
@@ -872,24 +763,42 @@ class DailyReport(models.Model):
                     'product_id': line.product_id.id,
                     'product_uom_id': line.uom_id.id,
                     'daily_report_id': report.id,
+                    'category': 'vendor_bill',
+                    'ref': report.name,
+                    # user_id omitted here — set below paired with employee_id.
+                    # Writing user_id alone triggers hr_timesheet to recompute
+                    # employee_id; if no employee is found it becomes False and
+                    # Odoo clears project_id to satisfy the SQL constraint,
+                    # causing all Gross Margin rows to group under "None".
                 }
-                
-                # Add general account if available
+
+                # GL account — prefer product category expense account
                 if line.product_id.categ_id and line.product_id.categ_id.property_account_expense_categ_id:
                     entry_vals['general_account_id'] = line.product_id.categ_id.property_account_expense_categ_id.id
-                
-                # Add project_id if available
-                if report.project_id.project_id:
-                    entry_vals['project_id'] = report.project_id.project_id.id
+
+                # Partner — use report-level default vendor for non-PO lines
+                if report.partner_id:
+                    entry_vals['partner_id'] = report.partner_id.id
                 
                 # Log the values for debugging
                 _logger.info(f"Creating analytic entry with amount: {entry_vals['amount']}, product: {line.product_id.name}")
-                
-                # Create the entry
+
+                # Create WITHOUT project_id to bypass hr_timesheet.create()
+                # ValidationError ("Timesheets must be created with an active
+                # employee"). hr_timesheet.write() has no such restriction, so
+                # project_id is patched immediately after via write().
                 analytic_line = self.env['account.analytic.line'].create(entry_vals)
-                analytic_line.with_context(check_move_validity=False).write({
-                    'amount': analytic_amount
-                })
+                if report.project_id.project_id:
+                    analytic_line.write({'project_id': report.project_id.project_id.id})
+                    # hr_timesheet._timesheet_preprocess_get_accounts() injects
+                    # account_id into the write vals, which triggers
+                    # _timesheet_postprocess() to recompute amount as
+                    # standard_price × unit_amount.  For AVCO/FIFO products
+                    # standard_price is often 0, zeroing out the stock-valuation
+                    # cost we calculated above.  Restore the correct amount.
+                    analytic_line.with_context(check_move_validity=False).write(
+                        {'amount': analytic_amount}
+                    )
 
 
             # Labor and machinery costs are now tracked through product lines
@@ -1075,8 +984,79 @@ class DailyReport(models.Model):
         
         _logger.info(f"DEBUG: Created bill {vendor_bill.name} with partner {vendor_bill.partner_id.name}")
         _logger.info(f"Created vendor bill {vendor_bill.name} for {vendor.name} from daily report {self.name}")
-        
+
         return vendor_bill
+
+    # ── One-time data repair ──────────────────────────────────────────────────
+
+    @api.model
+    def action_repair_duplicate_analytic_entries(self):
+        """
+        Remove ghost analytic entries created by _create_analytic_entries()
+        for PO-backed labor/machinery lines before the duplication fix was applied.
+
+        Before the fix, marking a Daily Report as Done produced a direct analytic
+        line (daily_report_id set) for every labor/machinery line — even those
+        backed by a Purchase Order.  When the accountant later posted the vendor
+        bill, Odoo created a second analytic line linked to the bill move line
+        (move_line_id set), resulting in a double-counted cost.
+
+        Since the fix is now live, PO-backed labor/machinery lines no longer
+        generate analytic entries directly — entries are only created when the
+        vendor bill is posted.  Any remaining ghost entries (move_line_id = False,
+        daily_report_id set) for PO-backed lines are therefore safe to delete
+        unconditionally; waiting for a bill-backed entry to appear first would
+        leave the ghost in place and cause duplication when the bill is later posted.
+
+        Safe to run multiple times — already-cleaned databases are unaffected.
+        """
+        AnalyticLine = self.env['account.analytic.line']
+        to_delete = AnalyticLine
+
+        done_reports = self.search([('state', '=', 'done')])
+        for report in done_reports:
+            for line in report.labor_machinery_lines:
+                if not line.purchase_order_line_id:
+                    continue
+
+                # DR-created ghost entries for this report + product.
+                # Entries linked to a journal item (move_line_id set) are
+                # GL-backed (came from a vendor bill) and must not be touched.
+                dr_lines = AnalyticLine.search([
+                    ('daily_report_id', '=', report.id),
+                    ('product_id', '=', line.product_id.id),
+                    ('move_line_id', '=', False),
+                ])
+                if not dr_lines:
+                    continue
+
+                # The bug is fixed: PO-backed lines no longer generate direct
+                # DR analytic entries, so any ghost entry found here is safe to
+                # delete unconditionally.  Keeping it until a bill is posted
+                # would cause duplication the moment the bill is later posted.
+                to_delete |= dr_lines
+
+        count = len(to_delete)
+        if to_delete:
+            to_delete.unlink()
+            _logger.info(
+                "Repair duplicate analytic entries: removed %d ghost entries.", count
+            )
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Analytic Entries Repaired'),
+                'message': _(
+                    '%(count)d duplicate analytic entries removed. '
+                    'Gross Margin figures are now accurate.',
+                    count=count,
+                ) if count else _('No duplicate entries found. Database is already clean.'),
+                'type': 'success' if count else 'info',
+                'sticky': False,
+            },
+        }
 
 
 class StockMove(models.Model):
@@ -1249,57 +1229,57 @@ class DailyReportLine(models.Model):
 
     @api.depends('product_id', 'quantity', 'purchase_order_line_id', 'purchase_order_line_id.price_unit', 'line_type', 'po_unit_price', 'report_id.stock_move_ids.state')
     def _compute_actual_cost(self):
-        """Enhanced cost calculation - labor/machinery must use PO prices only"""
-        # Use force_write context to avoid write restrictions during computation
+        """
+        Compute the actual cost for each DR line.
+
+        Labor/machinery (PO-backed): PO unit price × quantity.
+        Service products:            standard_price × quantity  (no stock moves).
+        Stock/consumable products:   sum of stock.valuation.layer values for the
+                                     validated moves of this report + product.
+                                     SVL is frozen at validation time and is immune
+                                     to subsequent AVCO/FIFO standard_price updates,
+                                     so it stays in sync with the analytic entry
+                                     created by _create_analytic_entries().
+                                     Falls back to standard_price only when no
+                                     validated moves exist yet (pre-validation state).
+        """
         self = self.with_context(force_write=True)
-        
+
         for line in self:
+            # ── Labor / machinery (PO-backed) ────────────────────────────────
             if line.line_type == 'labor_machinery':
                 if line.purchase_order_line_id:
-                    # Directly get the price from PO line to ensure we have the latest value
-                    po_price = line.purchase_order_line_id.price_unit
-                    line.actual_cost = po_price * line.quantity
-                    _logger.info(f"DEBUG: Labor/machinery cost calculation for line {line.id}: "
-                               f"PO price: {po_price}, Quantity: {line.quantity}, Total cost: {line.actual_cost}")
+                    line.actual_cost = line.purchase_order_line_id.price_unit * line.quantity
                 else:
-                    # This shouldn't happen due to constraints, but handle gracefully
-                    line.actual_cost = 10.0
-                    _logger.warning(f"Labor/machinery line {line.id} missing PO data")
+                    line.actual_cost = 0.0
+                    _logger.warning("Labor/machinery line %s has no PO data", line.id)
                 continue
-                
-            # For services in other products section, use standard pricing
+
+            # ── Service products (no stock movement) ─────────────────────────
             if line.product_id.type == 'service':
-                standard_price = line.product_id.standard_price or 0.0
-                line.actual_cost = standard_price * line.quantity
+                line.actual_cost = (line.product_id.standard_price or 0.0) * line.quantity
                 continue
-                
-            # Look for validated stock moves for this product in this report
+
+            # ── Stock / consumable products ───────────────────────────────────
+            # Primary source: stock.valuation.layer (SVL).
+            # SVL is created at picking validation and frozen; it is never
+            # affected by later AVCO recalculations, making it the only source
+            # that stays consistent with the analytic entry amount.
             moves = self.env['stock.move'].search([
                 ('daily_report_id', '=', line.report_id.id),
                 ('product_id', '=', line.product_id.id),
-                ('state', '=', 'done')
+                ('state', '=', 'done'),
             ])
-            
             if moves:
-                # Use the actual valuation from the stock moves
-                try:
-                    total_cost = sum(move.product_price_value_unit * move.product_qty for move in moves)
-                    total_qty = sum(move.product_qty for move in moves)
-                    # If we have quantities, calculate unit cost and multiply by line qty
-                    if total_qty > 0:
-                        unit_cost = total_cost / total_qty
-                        line.actual_cost = unit_cost * line.quantity
-                    else:
-                        standard_price = line.product_id.standard_price or 0.0
-                        line.actual_cost = standard_price * line.quantity
-                except Exception as e:
-                    _logger.warning(f"Error calculating cost from stock moves: {str(e)}")
-                    standard_price = line.product_id.standard_price or 0.0
-                    line.actual_cost = standard_price * line.quantity
-            else:
-                # Fallback to standard price if no validated moves exist
-                standard_price = line.product_id.standard_price or 0.0
-                line.actual_cost = standard_price * line.quantity
+                layers = self.env['stock.valuation.layer'].search([
+                    ('stock_move_id', 'in', moves.ids),
+                ])
+                if layers:
+                    line.actual_cost = sum(abs(layer.value) for layer in layers)
+                    continue
+
+            # Fallback: no validated moves yet — use standard_price (pre-validation).
+            line.actual_cost = (line.product_id.standard_price or 0.0) * line.quantity
 
     @api.depends('product_id', 'quantity', 'report_id.company_id')
     def _compute_available_stock(self):
@@ -1749,10 +1729,10 @@ class DailyReportLine(models.Model):
         """Get display name for PO line selection"""
         if not po_line:
             return ''
-        
+
         po = po_line.order_id
         vendor = po.partner_id.name
         price = po_line.price_unit
         currency = po.currency_id.symbol or po.currency_id.name
-        
+
         return f"{po.name} - {vendor} - {price} {currency}"

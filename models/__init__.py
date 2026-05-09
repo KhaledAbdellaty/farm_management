@@ -2,6 +2,7 @@ from . import farm
 from . import field
 from . import crop
 from . import cultivation_project
+from . import harvest_batch
 from . import crop_bom
 from . import daily_report
 from . import cost_analysis

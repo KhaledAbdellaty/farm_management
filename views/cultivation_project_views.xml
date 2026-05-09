@@ -8,38 +8,48 @@
             <form string="Cultivation Project">
                 <header>
                     <field name="state" widget="statusbar" statusbar_visible="draft,preparation,sowing,growing,harvest,sales,done"/>
-                    <button name="action_draft" string="Set to Draft" type="object" invisible="not (state == 'cancel')" class="oe_highlight"/>
-                    <button name="action_preparation" string="Start Field Preparation" type="object" invisible="not (state == 'draft')" class="oe_highlight"/>
-                    <button name="action_sowing" string="Start Sowing" type="object" invisible="not (state == 'preparation')" class="oe_highlight"/>
-                    <button name="action_growing" string="Start Growing" type="object" invisible="not (state == 'sowing')" class="oe_highlight"/>
-                    <button name="action_harvest" string="Start Harvest" type="object" invisible="not (state == 'growing')" class="oe_highlight"/>
-                    <button name="action_create_sale_order" string="Create Sales Order" type="object" invisible="not (state == 'harvest')" class="oe_highlight"
-                          confirm="Warning: This will create a sales order using the current harvest yield and price. These values will affect product stock and sales price. Are you sure you want to continue?"/>
-                    <button name="action_sales" string="Move to Sales" type="object" invisible="not (state == 'harvest')" class="btn btn-secondary"
-                          confirm="Warning: This will confirm the harvest yield and price, which will affect product stock and sales price. This action cannot be undone. Are you sure you want to continue?"/>
-                    <button name="action_done" string="Mark as Done" type="object" invisible="not (state == 'sales')" class="oe_highlight"/>
-                    <button name="action_cancel" string="Cancel" type="object" invisible="not (state in ('draft','preparation','sowing','growing'))" confirm="Are you sure you want to cancel this project?"/>
+                    <button name="action_draft"       string="Set to Draft"          type="object" invisible="state != 'cancel'"                                      class="oe_highlight"/>
+                    <button name="action_preparation" string="Start Field Preparation" type="object" invisible="state != 'draft'"                                     class="oe_highlight"/>
+                    <button name="action_sowing"      string="Start Sowing"          type="object" invisible="state != 'preparation'"                                  class="oe_highlight"/>
+                    <button name="action_growing"     string="Start Growing"         type="object" invisible="state != 'sowing'"                                      class="oe_highlight"/>
+                    <button name="action_harvest"     string="Start Harvest"         type="object" invisible="state != 'growing'"                                     class="oe_highlight"/>
+                    <button name="action_create_sale_order" string="Create Sales Order" type="object"
+                            invisible="state != 'harvest'" class="oe_highlight"
+                            confirm="This will create a sales order using the total validated yield and weighted average price across all harvest batches. Continue?"/>
+                    <button name="action_sales" string="Move to Sales" type="object"
+                            invisible="state != 'harvest'" class="btn btn-secondary"
+                            confirm="Confirm moving to Sales stage. All stock receipts from validated harvest batches are already updated in inventory. Continue?"/>
+                    <button name="action_done"   string="Mark as Done" type="object" invisible="state != 'sales'"  class="oe_highlight"/>
+                    <button name="action_cancel" string="Cancel"        type="object"
+                            invisible="state not in ('draft','preparation','sowing','growing')"
+                            confirm="Are you sure you want to cancel this project?"/>
                 </header>
-                <!-- Banner for Harvest Receipt - Only shown when stock move is validated and state is sales or done -->
-                <div class="alert alert-success d-flex" invisible="not (stock_picking_id and stock_picking_id.state == 'done' and state in ['sales', 'done'])" role="alert">
+
+                <!-- Banner: all validated batches — stock is up to date -->
+                <div class="alert alert-success d-flex"
+                     invisible="not (harvest_batch_ids and state in ['harvest','sales','done'] and actual_yield > 0)"
+                     role="alert">
                     <i class="fa fa-check-circle me-2" title="Success" aria-label="Success"/>
                     <div>
-                        <p>
-                            <strong>Harvest Receipt Validated:</strong> The harvested crop has been added to inventory.
-                        </p>
-                        <button name="action_view_harvest_receipt" type="object" string="View Receipt" class="btn btn-sm btn-link"/>
+                        <strong>Harvested stock received in inventory.</strong>
+                        Total validated yield: <field name="actual_yield" readonly="1" nolabel="1"/> <field name="yield_uom_id" readonly="1" nolabel="1"/>
+                        at weighted avg price <field name="harvest_price" readonly="1" nolabel="1" widget="monetary" options="{'currency_field': 'currency_id'}"/>.
+                        <button name="action_view_harvest_batches" type="object"
+                                string="View Harvest Batches" class="btn btn-sm btn-link"/>
                     </div>
                 </div>
-                <div class="alert alert-info d-flex" invisible="not (stock_picking_id and stock_picking_id.state != 'done' and state in ['sales', 'done'])" role="alert">
-                    <i class="fa fa-info-circle me-2" title="Information" aria-label="Information"/>
+
+                <!-- Banner: batches exist but nothing validated yet -->
+                <div class="alert alert-warning d-flex"
+                     invisible="not (harvest_batch_ids and actual_yield == 0 and state in ['sowing','growing','harvest'])"
+                     role="alert">
+                    <i class="fa fa-exclamation-triangle me-2" title="Warning" aria-label="Warning"/>
                     <div>
-                        <p>
-                            <strong>Harvest Receipt Created:</strong> The harvest receipt is waiting for validation to update inventory.
-                            Click the button below to view and validate it.
-                        </p>
-                        <button name="action_view_harvest_receipt" type="object" string="View Receipt" class="btn btn-sm btn-link"/>
+                        <strong>Pending harvest batches.</strong>
+                        Some batches have receipts not yet validated. Validate each receipt to update inventory and include the quantity in the project totals.
                     </div>
                 </div>
+
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_view_daily_reports" type="object" class="oe_stat_button" icon="fa-calendar-check-o">
@@ -47,6 +57,10 @@
                         </button>
                         <button name="action_view_tasks" type="object" class="oe_stat_button" icon="fa-tasks">
                             <field name="task_count" widget="statinfo" string="Tasks"/>
+                        </button>
+                        <button name="action_view_harvest_batches" type="object" class="oe_stat_button" icon="fa-leaf"
+                                invisible="state not in ('sowing','growing','harvest','sales','done')">
+                            <field name="harvest_batch_count" widget="statinfo" string="Harvests"/>
                         </button>
                         <button name="action_view_sale_orders" type="object" class="oe_stat_button" icon="fa-usd">
                             <field name="sale_order_count" widget="statinfo" string="Sales"/>
@@ -57,7 +71,7 @@
                             <field name="name" placeholder="Project Name"/>
                         </h1>
                         <h2>
-                            <field name="code" placeholder="Project Code"  readonly="1"/>
+                            <field name="code" placeholder="Project Code" readonly="1"/>
                         </h2>
                     </div>
                     <group>
@@ -80,31 +94,113 @@
                                 <group>
                                     <field name="crop_id" options="{'no_create': True}"/>
                                     <field name="bom_total_cost" invisible="not crop_bom_id"/>
-                                    <field name="currency_id" invisible="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
                                 </group>
                                 <group>
                                     <field name="crop_bom_id" domain="[('crop_id', '=', crop_id)]" options="{'no_create': True}"/>
                                 </group>
                             </group>
                         </page>
-                        <page string="Harvest Information" invisible="not (state in ('growing', 'harvest', 'sales', 'done', 'cancel'))">
-                            <group>
+
+                        <!-- ══════════════════════════════════════════════════════
+                             HARVEST BATCHES TAB
+                             Visible from Sowing onward so farmers can record
+                             partial harvests as they happen.
+                             ══════════════════════════════════════════════════════ -->
+                        <page string="Harvest Batches"
+                              invisible="state not in ('sowing','growing','harvest','sales','done','cancel')">
+
+                            <!-- Yield UoM — project-level setting, inherited by new batches -->
+                            <group string="Yield Settings">
                                 <group>
                                     <field name="planned_yield"/>
-                                    <field name="actual_yield" readonly="not (state == 'harvest')" required="state == 'harvest'"/>
-                                    <field name="yield_uom_id" readonly="not (state == 'harvest')"/>
-                                    <field name="harvest_price" readonly="not (state == 'harvest')" required="state == 'harvest'" 
-                                           widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    <field name="yield_uom_id"
+                                           readonly="state in ('sales','done','cancel')"
+                                           options="{'no_create': True}"/>
                                 </group>
                                 <group>
                                     <field name="yield_quality"/>
-                                    <div class="alert alert-warning" role="alert" invisible="state != 'harvest'">
-                                        <strong>Warning:</strong> After confirming, the actual yield and price will be used 
-                                        to update product stock and sales pricing information. These values cannot be changed later.
-                                    </div>
                                 </group>
                             </group>
+
+                            <!-- Harvest batch lines -->
+                            <field name="harvest_batch_ids"
+                                   context="{
+                                       'default_project_id': id,
+                                       'default_uom_id': yield_uom_id,
+                                   }"
+                                   readonly="state in ('done','cancel')">
+                                <list string="Harvest Batches" editable="bottom"
+                                      decoration-success="state == 'validated'"
+                                      decoration-warning="state == 'receipt_created'"
+                                      decoration-muted="state == 'draft'">
+                                    <field name="date"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id" options="{'no_create': True}"/>
+                                    <field name="price_unit" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"/>
+                                    <field name="subtotal" widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           sum="Total Value"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'validated'"
+                                           decoration-warning="state == 'receipt_created'"/>
+                                    <field name="picking_id" readonly="1" optional="show"/>
+                                    <field name="notes" optional="hide"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <!-- Per-row action buttons -->
+                                    <button name="action_create_receipt"
+                                            string="Create Receipt"
+                                            type="object"
+                                            icon="fa-inbox"
+                                            invisible="state != 'draft'"
+                                            confirm="Create a stock receipt for this harvest batch? The harvested crop will be moved to warehouse inventory once validated."
+                                            title="Create stock receipt for this batch"/>
+                                    <button name="action_validate_receipt"
+                                            string="Validate Receipt"
+                                            type="object"
+                                            icon="fa-check"
+                                            invisible="state != 'receipt_created'"
+                                            confirm="Validate the receipt for this harvest batch? This will permanently add the quantity to your warehouse stock and cannot be undone."
+                                            title="Validate stock receipt — updates on-hand inventory"/>
+                                    <button name="action_view_receipt"
+                                            string="View Receipt"
+                                            type="object"
+                                            icon="fa-eye"
+                                            invisible="not picking_id"
+                                            title="Open the stock receipt"/>
+                                </list>
+                            </field>
+
+                            <!-- Computed totals summary -->
+                            <group string="Validated Totals" col="4"
+                                   invisible="actual_yield == 0">
+                                <group>
+                                    <field name="actual_yield" readonly="1"
+                                           help="Sum of all validated harvest batches"/>
+                                </group>
+                                <group>
+                                    <field name="harvest_price" readonly="1"
+                                           widget="monetary"
+                                           options="{'currency_field': 'currency_id'}"
+                                           help="Weighted average price across all validated batches"/>
+                                </group>
+                            </group>
+
+                            <!-- Guidance note (only shown before any batches are validated) -->
+                            <div class="alert alert-info mt-2" role="alert"
+                                 invisible="actual_yield > 0 or state not in ('sowing','growing','harvest')">
+                                <i class="fa fa-info-circle me-1"/>
+                                Add one row per harvest event. Fill in the date, quantity and price, then:
+                                <ol class="mb-0 mt-1">
+                                    <li>Click <strong>Create Receipt</strong> to generate a stock receipt.</li>
+                                    <li>Click <strong>Validate Receipt</strong> to move the crop into warehouse inventory.</li>
+                                </ol>
+                                You can record multiple partial harvests — each creates its own receipt.
+                                The <em>Actual Yield</em> and <em>Weighted Avg Price</em> are updated automatically.
+                            </div>
                         </page>
+
                         <page string="Financial">
                             <group>
                                 <group>
@@ -116,7 +212,7 @@
                                         </span>
                                     </div>
                                     <field name="actual_cost"/>
-                                    <field name="currency_id" invisible="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
                                 </group>
                                 <group>
                                     <field name="revenue"/>
@@ -128,22 +224,30 @@
                                 <list string="Costs" editable="bottom">
                                     <field name="date"/>
                                     <field name="cost_type"/>
+                                    <field name="product_id" optional="hide" options="{'no_create': True}"/>
                                     <field name="cost_name"/>
                                     <field name="quantity"/>
                                     <field name="uom_id"/>
                                     <field name="cost_amount" sum="Total"/>
-                                    <field name="currency_id" invisible="1"/>
+                                    <field name="partner_id" optional="hide"
+                                           options="{'no_create': True}"/>
+                                    <field name="invoice_id" optional="hide"
+                                           domain="[('move_type', 'in', ['in_invoice', 'in_refund'])]"
+                                           options="{'no_create': True}"/>
+                                    <field name="general_account_id" optional="hide"
+                                           groups="account.group_account_user"
+                                           options="{'no_create': True}"/>
+                                    <field name="currency_id" column_invisible="1"/>
                                 </list>
                             </field>
                         </page>
+
                         <page string="Daily Operations">
                             <group>
                                 <group>
                                     <field name="total_irrigation_hours" widget="float_time"/>
                                 </group>
-                                <group>
-                                    <!-- Reserved for future metrics -->
-                                </group>
+                                <group/>
                             </group>
                             <field name="daily_report_ids" context="{'default_project_id': id}">
                                 <list string="Daily Reports">
@@ -153,27 +257,31 @@
                                     <field name="state"/>
                                     <field name="irrigation_duration" widget="float_time"/>
                                     <field name="actual_cost"/>
-                                    <field name="currency_id" invisible="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
                                 </list>
                             </field>
                         </page>
-                        <page string="Sales Orders" invisible="not (state in ('harvest', 'sales', 'done'))">
+
+                        <page string="Sales Orders" invisible="state not in ('harvest','sales','done')">
                             <field name="sale_order_ids" readonly="1">
                                 <list string="Sales Orders">
                                     <field name="name"/>
                                     <field name="date_order"/>
                                     <field name="partner_id"/>
                                     <field name="amount_untaxed" sum="Total Untaxed"/>
-                                    <field name="amount_tax" sum="Total Tax"/>
-                                    <field name="amount_total" sum="Total"/>
+                                    <field name="amount_tax"     sum="Total Tax"/>
+                                    <field name="amount_total"   sum="Total"/>
                                     <field name="state"/>
                                     <field name="invoice_status"/>
+                                    <field name="currency_id" column_invisible="1"/>
+
                                 </list>
                             </field>
-                            <button name="action_create_sale_order" string="Create Sales Order" type="object" 
+                            <button name="action_create_sale_order" string="Create Sales Order" type="object"
                                     class="oe_highlight" invisible="state != 'harvest'"
-                                    confirm="Warning: This will create a sales order using the current harvest yield and price. These values will affect product stock and sales price. Are you sure you want to continue?"/>
+                                    confirm="This will create a sales order using the total validated yield and weighted average price. Continue?"/>
                         </page>
+
                         <page string="Notes">
                             <field name="notes"/>
                         </page>
@@ -189,7 +297,12 @@
         <field name="name">farm.cultivation.project.list</field>
         <field name="model">farm.cultivation.project</field>
         <field name="arch" type="xml">
-            <list string="Cultivation Projects" decoration-success="state=='done'" decoration-info="state=='growing'" decoration-warning="state=='harvest'" decoration-primary="state=='sales'" decoration-danger="state=='cancel'">
+            <list string="Cultivation Projects"
+                  decoration-success="state=='done'"
+                  decoration-info="state=='growing'"
+                  decoration-warning="state=='harvest'"
+                  decoration-primary="state=='sales'"
+                  decoration-danger="state=='cancel'">
                 <field name="name"/>
                 <field name="code"/>
                 <field name="farm_id"/>
@@ -198,15 +311,16 @@
                 <field name="start_date"/>
                 <field name="planned_end_date"/>
                 <field name="state"/>
-                <field name="actual_yield" optional="show"/>
-                <field name="yield_uom_id" optional="show"/>
-                <field name="harvest_price" optional="show"/>
+                <field name="harvest_batch_count" optional="show" string="Batches"/>
+                <field name="actual_yield"   optional="show"/>
+                <field name="yield_uom_id"   optional="show"/>
+                <field name="harvest_price"  optional="show"/>
                 <field name="budget"/>
-                <field name="actual_cost"/>
+                <field name="actual_cost" sum="Total Cost"/>
                 <field name="total_irrigation_hours" optional="show" widget="float_time" sum="Total Irrigation Hours"/>
-                <field name="revenue" optional="show"/>
-                <field name="profit" optional="show"/>
-                <field name="currency_id" invisible="1"/>
+                <field name="revenue" optional="show" sum="Total Revenue"/>
+                <field name="profit"  optional="show" sum="Total Profit"/>
+                <field name="currency_id" column_invisible="1"/>
             </list>
         </field>
     </record>
@@ -222,23 +336,24 @@
                 <field name="farm_id"/>
                 <field name="field_id"/>
                 <field name="crop_id"/>
-                <filter string="Planning" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Planning"         name="draft"        domain="[('state', '=', 'draft')]"/>
                 <filter string="Field Preparation" name="preparation" domain="[('state', '=', 'preparation')]"/>
-                <filter string="Sowing" name="sowing" domain="[('state', '=', 'sowing')]"/>
-                <filter string="Growing" name="growing" domain="[('state', '=', 'growing')]"/>
-                <filter string="Harvesting" name="harvest" domain="[('state', '=', 'harvest')]"/>
-                <filter string="Sales" name="sales" domain="[('state', '=', 'sales')]"/>
-                <filter string="Completed" name="done" domain="[('state', '=', 'done')]"/>
-                <filter string="Cancelled" name="cancel" domain="[('state', '=', 'cancel')]"/>
-                <filter string="In Progress" name="in_progress" domain="[('state', 'not in', ['done', 'cancel'])]"/>
-                <filter string="All Projects" name="all_projects" domain="[]"/>
-                <filter string="With Irrigation" name="with_irrigation" domain="[('total_irrigation_hours', '>', 0)]"/>
-                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <filter string="Sowing"           name="sowing"       domain="[('state', '=', 'sowing')]"/>
+                <filter string="Growing"          name="growing"      domain="[('state', '=', 'growing')]"/>
+                <filter string="Harvesting"       name="harvest"      domain="[('state', '=', 'harvest')]"/>
+                <filter string="Sales"            name="sales"        domain="[('state', '=', 'sales')]"/>
+                <filter string="Completed"        name="done"         domain="[('state', '=', 'done')]"/>
+                <filter string="Cancelled"        name="cancel"       domain="[('state', '=', 'cancel')]"/>
+                <filter string="In Progress"      name="in_progress"  domain="[('state', 'not in', ['done', 'cancel'])]"/>
+                <filter string="All Projects"     name="all_projects" domain="[]"/>
+                <filter string="With Irrigation"  name="with_irrigation" domain="[('total_irrigation_hours', '>', 0)]"/>
+                <filter string="Has Harvest Batches" name="has_batches" domain="[('harvest_batch_ids', '!=', False)]"/>
+                <filter string="Archived"         name="inactive"     domain="[('active', '=', False)]"/>
                 <group expand="0" string="Group By">
-                    <filter string="Farm" name="farm" context="{'group_by': 'farm_id'}"/>
-                    <filter string="Field" name="field" context="{'group_by': 'field_id'}"/>
-                    <filter string="Crop" name="crop" context="{'group_by': 'crop_id'}"/>
-                    <filter string="Stage" name="stage" context="{'group_by': 'state'}"/>
+                    <filter string="Farm"       name="farm"       context="{'group_by': 'farm_id'}"/>
+                    <filter string="Field"      name="field"      context="{'group_by': 'field_id'}"/>
+                    <filter string="Crop"       name="crop"       context="{'group_by': 'crop_id'}"/>
+                    <filter string="Stage"      name="stage"      context="{'group_by': 'state'}"/>
                     <filter string="Start Date" name="start_date" context="{'group_by': 'start_date'}"/>
                 </group>
             </search>
@@ -254,6 +369,7 @@
                 <field name="id"/>
                 <field name="name"/>
                 <field name="code"/>
+                <field name="color"/>
                 <field name="farm_id"/>
                 <field name="field_id"/>
                 <field name="crop_id"/>
@@ -261,33 +377,86 @@
                 <field name="planned_end_date"/>
                 <field name="state"/>
                 <field name="actual_cost"/>
-                <field name="currency_id"/>
-                <progressbar field="state" 
-                             colors='{"draft": "muted", "preparation": "info", "sowing": "info", "growing": "success", 
-                                     "harvest": "warning", "sales": "primary", "done": "success", "cancel": "danger"}'/>
+                <field name="actual_yield"/>
+                <field name="harvest_batch_count"/>
+                <field name="currency_id" column_invisible="1"/>
+                <progressbar field="state"
+                             colors='{"draft":"muted","preparation":"info","sowing":"info","growing":"success",
+                                     "harvest":"warning","sales":"primary","done":"success","cancel":"danger"}'/>
                 <templates>
-                    <t t-name="card">
+                    <t t-name="card" owl="1">
                         <div class="oe_kanban_global_click">
-                            <div class="o_kanban_record_top">
+
+                            <!-- Header: project name + crop subtitle -->
+                            <div class="o_kanban_record_top mb-1">
                                 <div class="o_kanban_record_headings">
+                                    <div class="d-flex flex-column gap-1">
                                     <strong class="o_kanban_record_title">
                                         <field name="name"/>
                                     </strong>
-                                    <small class="o_kanban_record_subtitle">
-                                        <field name="crop_id"/>
+                                    <small class="o_kanban_record_subtitle text-muted">
+                                        <i class="fa fa-leaf me-1"/><field name="crop_id"/>
                                     </small>
                                 </div>
-                            </div>
-                            <div class="o_kanban_record_body">
-                                <field name="farm_id"/> - <field name="field_id"/>
-                                <div>
-                                    <t t-out="record.start_date.value"/> to <t t-out="record.planned_end_date.value"/>
-                                </div>
-                                <div t-if="record.actual_cost.raw_value">
-                                    Cost: <field name="actual_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+
                                 </div>
                             </div>
-                            <div class="o_kanban_record_bottom">
+
+                            <!-- Body rows -->
+                            <div class="o_kanban_record_body d-flex flex-column gap-1">
+
+                                <!-- Farm › Field -->
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="fa fa-map-marker fa-fw text-muted"/>
+                                    <span class="text-truncate">
+                                        <field name="farm_id"/>
+                                        <span class="mx-1 text-muted">›</span>
+                                        <field name="field_id"/>
+                                    </span>
+                                </div>
+
+                                <!-- Date range -->
+                                <div class="d-flex align-items-center gap-1">
+                                    <i class="fa fa-calendar fa-fw text-muted"/>
+                                    <span>
+                                        <t t-out="record.start_date.value"/>
+                                        <span class="mx-1 text-muted">–</span>
+                                        <t t-out="record.planned_end_date.value"/>
+                                    </span>
+                                </div>
+
+                                <!-- Actual cost (only when > 0) -->
+                                <div t-if="record.actual_cost.raw_value"
+                                     class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">
+                                        <i class="fa fa-money fa-fw me-1"/>
+                                        <span>Cost</span>
+                                    </span>
+                                    <strong>
+                                        <field name="actual_cost" widget="monetary"
+                                               options="{'currency_field': 'currency_id'}"/>
+                                    </strong>
+                                </div>
+
+                                <!-- Yield (only when > 0) -->
+                                <div t-if="record.actual_yield.raw_value"
+                                     class="d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">
+                                        <i class="fa fa-cubes fa-fw me-1"/>
+                                        <span>Yield</span>
+                                    </span>
+                                    <strong>
+                                        <field name="actual_yield"/>
+                                        <span class="ms-1 text-muted">
+                                            (<t t-out="record.harvest_batch_count.raw_value"/>
+                                            <span> batches</span>)
+                                        </span>
+                                    </strong>
+                                </div>
+
+                            </div>
+
+                            <div class="o_kanban_record_bottom mt-1">
                                 <div class="oe_kanban_bottom_left"/>
                                 <div class="oe_kanban_bottom_right"/>
                             </div>
@@ -303,11 +472,128 @@
         <field name="name">farm.cultivation.project.calendar</field>
         <field name="model">farm.cultivation.project</field>
         <field name="arch" type="xml">
-            <calendar string="Cultivation Projects" date_start="start_date" date_stop="planned_end_date" color="farm_id" mode="month">
+            <calendar string="Cultivation Projects"
+                      date_start="start_date"
+                      date_stop="planned_end_date"
+                      color="color"
+                      mode="month">
                 <field name="name"/>
                 <field name="crop_id"/>
+                <field name="farm_id"/>
                 <field name="field_id"/>
             </calendar>
+        </field>
+    </record>
+
+    <!-- ══════════════════════════════════════════════════════════════════════
+         HARVEST BATCH standalone list/form views
+         (used by the stat button and action_view_harvest_batches)
+         ══════════════════════════════════════════════════════════════════════ -->
+    <record id="view_farm_harvest_batch_list" model="ir.ui.view">
+        <field name="name">farm.harvest.batch.list</field>
+        <field name="model">farm.harvest.batch</field>
+        <field name="arch" type="xml">
+            <list string="Harvest Batches"
+                  decoration-success="state == 'validated'"
+                  decoration-warning="state == 'receipt_created'"
+                  decoration-muted="state == 'draft'">
+                <field name="project_id"/>
+                <field name="date"/>
+                <field name="quantity"/>
+                <field name="uom_id"/>
+                <field name="price_unit" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                <field name="subtotal"   widget="monetary" options="{'currency_field': 'currency_id'}" sum="Total Value"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'validated'"
+                       decoration-warning="state == 'receipt_created'"/>
+                <field name="picking_id" optional="show"/>
+                <field name="notes"      optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <button name="action_create_receipt"   string="Create Receipt"   type="object" icon="fa-inbox"
+                        invisible="state != 'draft'"/>
+                <button name="action_validate_receipt" string="Validate Receipt" type="object" icon="fa-check"
+                        invisible="state != 'receipt_created'"/>
+                <button name="action_view_receipt"     string="View Receipt"     type="object" icon="fa-eye"
+                        invisible="not picking_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_farm_harvest_batch_form" model="ir.ui.view">
+        <field name="name">farm.harvest.batch.form</field>
+        <field name="model">farm.harvest.batch</field>
+        <field name="arch" type="xml">
+            <form string="Harvest Batch">
+                <header>
+                    <button name="action_create_receipt"
+                            string="Create Stock Receipt"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'draft'"
+                            confirm="Create a stock receipt for this harvest batch? The crop will be moved to warehouse inventory once you validate the receipt."/>
+                    <button name="action_validate_receipt"
+                            string="Validate Receipt"
+                            type="object"
+                            class="oe_highlight"
+                            invisible="state != 'receipt_created'"
+                            confirm="Validate this harvest receipt? This will permanently add the quantity to your warehouse stock and cannot be undone."/>
+                    <button name="action_view_receipt"
+                            string="View Receipt"
+                            type="object"
+                            class="btn btn-secondary"
+                            invisible="not picking_id"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,receipt_created,validated"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group string="Batch Details">
+                            <field name="project_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="date"       readonly="state != 'draft'"/>
+                            <field name="quantity"   readonly="state != 'draft'"/>
+                            <field name="uom_id"     readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="price_unit" readonly="state != 'draft'" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </group>
+                        <group string="Result">
+                            <field name="subtotal" readonly="1" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"/>
+                            <field name="picking_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Additional Info">
+                        <field name="notes" colspan="2"/>
+                    </group>
+                    <div class="alert alert-info" role="alert" invisible="state != 'draft'">
+                        <i class="fa fa-info-circle me-1"/>
+                        Fill in the quantity and price, then click <strong>Create Stock Receipt</strong>.
+                        After reviewing the receipt, click <strong>Validate Receipt</strong> to add
+                        this harvest batch to warehouse inventory.
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="state != 'receipt_created'">
+                        <i class="fa fa-exclamation-triangle me-1"/>
+                        The stock receipt has been created. Click <strong>Validate Receipt</strong>
+                        to confirm the quantity in inventory. This action cannot be undone.
+                    </div>
+                    <div class="alert alert-success" role="alert" invisible="state != 'validated'">
+                        <i class="fa fa-check-circle me-1"/>
+                        This harvest batch is validated. The quantity has been added to warehouse inventory.
+                    </div>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action for harvest batches (used by stat button) -->
+    <record id="action_farm_harvest_batch" model="ir.actions.act_window">
+        <field name="name">Harvest Batches</field>
+        <field name="res_model">farm.harvest.batch</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No harvest batches yet.</p>
+            <p>Record each harvest event here. Each batch generates its own stock receipt.</p>
         </field>
     </record>
 

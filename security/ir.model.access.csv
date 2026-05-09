@@ -40,6 +40,9 @@ access_sale_order_farm_user,sale.order.farm.user,sale.model_sale_order,group_far
 access_sale_order_line_farm_user,sale.order.line.farm.user,sale.model_sale_order_line,group_farm_user,1,1,1,0
 access_sale_order_farm_manager,sale.order.farm.manager,sale.model_sale_order,group_farm_manager,1,1,1,1
 access_sale_order_line_farm_manager,sale.order.line.farm.manager,sale.model_sale_order_line,group_farm_manager,1,1,1,1
+access_farm_harvest_batch_user,farm.harvest.batch.user,model_farm_harvest_batch,group_farm_user,1,1,1,0
+access_farm_harvest_batch_manager,farm.harvest.batch.manager,model_farm_harvest_batch,group_farm_manager,1,1,1,1
+access_farm_harvest_batch_accountant,farm.harvest.batch.accountant,model_farm_harvest_batch,group_farm_accountant,1,0,0,0
 access_account_move_farm_user,account.move.farm.user,account.model_account_move,group_farm_user,1,0,0,0
 access_account_move_farm_manager,account.move.farm.manager,account.model_account_move,group_farm_manager,1,1,1,1
 access_account_move_farm_accountant,account.move.farm.accountant,account.model_account_move,group_farm_accountant,1,0,0,0
