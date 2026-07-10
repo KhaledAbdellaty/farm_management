@@ -154,6 +154,7 @@
                                             type="object"
                                             icon="fa-inbox"
                                             invisible="state != 'draft'"
+                                            groups="farm_management.group_farm_manager"
                                             confirm="Create a stock receipt for this harvest batch? The harvested crop will be moved to warehouse inventory once validated."
                                             title="Create stock receipt for this batch"/>
                                     <button name="action_validate_receipt"
@@ -161,6 +162,7 @@
                                             type="object"
                                             icon="fa-check"
                                             invisible="state != 'receipt_created'"
+                                            groups="farm_management.group_farm_manager"
                                             confirm="Validate the receipt for this harvest batch? This will permanently add the quantity to your warehouse stock and cannot be undone."
                                             title="Validate stock receipt — updates on-hand inventory"/>
                                     <button name="action_view_receipt"
@@ -510,9 +512,9 @@
                 <field name="notes"      optional="hide"/>
                 <field name="currency_id" column_invisible="1"/>
                 <button name="action_create_receipt"   string="Create Receipt"   type="object" icon="fa-inbox"
-                        invisible="state != 'draft'"/>
+                        invisible="state != 'draft'" groups="farm_management.group_farm_manager"/>
                 <button name="action_validate_receipt" string="Validate Receipt" type="object" icon="fa-check"
-                        invisible="state != 'receipt_created'"/>
+                        invisible="state != 'receipt_created'" groups="farm_management.group_farm_manager"/>
                 <button name="action_view_receipt"     string="View Receipt"     type="object" icon="fa-eye"
                         invisible="not picking_id"/>
             </list>
@@ -530,12 +532,14 @@
                             type="object"
                             class="oe_highlight"
                             invisible="state != 'draft'"
+                            groups="farm_management.group_farm_manager"
                             confirm="Create a stock receipt for this harvest batch? The crop will be moved to warehouse inventory once you validate the receipt."/>
                     <button name="action_validate_receipt"
                             string="Validate Receipt"
                             type="object"
                             class="oe_highlight"
                             invisible="state != 'receipt_created'"
+                            groups="farm_management.group_farm_manager"
                             confirm="Validate this harvest receipt? This will permanently add the quantity to your warehouse stock and cannot be undone."/>
                     <button name="action_view_receipt"
                             string="View Receipt"

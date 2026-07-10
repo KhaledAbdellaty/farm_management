@@ -10,6 +10,7 @@ class CostAnalysis(models.Model):
     _description = 'Farm Cost Analysis'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date desc, id desc'
+    _check_company_auto = True
 
     name = fields.Char(string='Reference', required=True, copy=False, readonly=True,
                      default=lambda self: _('New'))
@@ -17,7 +18,7 @@ class CostAnalysis(models.Model):
 
     # Project and location information
     project_id = fields.Many2one('farm.cultivation.project', string='Cultivation Project',
-                              required=True, tracking=True, ondelete='cascade')
+                              required=True, tracking=True, ondelete='cascade', check_company=True)
     farm_id = fields.Many2one('farm.farm', related='project_id.farm_id',
                            string='Farm', store=True, readonly=True)
     field_id = fields.Many2one('farm.field', related='project_id.field_id',
@@ -60,6 +61,7 @@ class CostAnalysis(models.Model):
         'product.product',
         string='Product / Service',
         tracking=True,
+        check_company=True,
         help='Optional. Product or service this cost relates to. '
              'Auto-fills description and unit of measure when selected.',
     )
@@ -79,8 +81,10 @@ class CostAnalysis(models.Model):
     uom_id = fields.Many2one('uom.uom', string='Unit of Measure', tracking=True)
 
     # Financial data
-    invoice_id = fields.Many2one('account.move', string='Invoice', tracking=True)
-    payment_id = fields.Many2one('account.payment', string='Payment', tracking=True)
+    invoice_id = fields.Many2one('account.move', string='Invoice', tracking=True,
+                               check_company=True)
+    payment_id = fields.Many2one('account.payment', string='Payment', tracking=True,
+                               check_company=True)
 
     # Analytical accounting — display reference only (analytic line is managed via analytic_line_id)
     analytic_account_id = fields.Many2one('account.analytic.account',
@@ -112,6 +116,7 @@ class CostAnalysis(models.Model):
         string='Financial Account',
         domain="[('deprecated', '=', False)]",
         tracking=True,
+        check_company=True,
         help='GL expense account for this cost. Auto-filled from the linked invoice '
              'or payment. Select manually when no invoice or payment is linked.',
     )
@@ -125,6 +130,7 @@ class CostAnalysis(models.Model):
         domain="[('deprecated', '=', False)]",
         tracking=True,
         groups='account.group_account_user',
+        check_company=True,
         help='Credit account for the generated journal entry '
              '(e.g. Accrued Expenses, Accounts Payable). '
              'Used only when no invoice or payment is linked.',
@@ -137,6 +143,7 @@ class CostAnalysis(models.Model):
         readonly=True,
         copy=False,
         ondelete='set null',
+        check_company=True,
         help='Journal entry automatically generated for this cost '
              'when no invoice or payment is linked.',
     )

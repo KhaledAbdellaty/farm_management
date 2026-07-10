@@ -7,7 +7,8 @@ class Farm(models.Model):
     _description = 'Farm'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'name'
-    
+    _check_company_auto = True
+
     @api.model
     def _get_area_unit_selection(self):
         """Return selection values for area units with translation support at runtime"""
@@ -39,8 +40,8 @@ class Farm(models.Model):
     currency_id = fields.Many2one('res.currency', related='company_id.currency_id')
     # Stock location for inventory operations
     location_id = fields.Many2one('stock.location', string='Stock Location',
+                               check_company=True,
                                help="Location where farm supplies and products are stored")
-    # TODO:-> Delete these field if not needed
     property_value = fields.Monetary(string='Property Value', currency_field='currency_id', tracking=True)
     
     field_ids = fields.One2many('farm.field', 'farm_id', string='Fields')
@@ -68,8 +69,11 @@ class Farm(models.Model):
     
     @api.model_create_multi
     def create(self, vals_list):
-        """Create an analytic account for each farm if none is provided and a stock location"""
+        """Generate sequence code, create an analytic account for each farm if none is
+        provided, then bootstrap the farm's stock locations."""
         for vals in vals_list:
+            if vals.get('code', 'New') == 'New':
+                vals['code'] = self.env['ir.sequence'].next_by_code('farm.farm') or 'New'
             if not vals.get('analytic_account_id'):
                 # Get the default analytic plan (required in Odoo 18)
                 default_plan = self.env['account.analytic.plan'].search([], limit=1)
@@ -168,14 +172,6 @@ class Farm(models.Model):
         for record in self:
             if record.area <= 0:
                 raise ValidationError(_("Farm area must be greater than zero."))
-    
-    @api.model_create_multi
-    def create(self, vals_list):
-        """Generate a unique code for new farms using the sequence"""
-        for vals in vals_list:
-            if vals.get('code', 'New') == 'New':
-                vals['code'] = self.env['ir.sequence'].next_by_code('farm.farm') or 'New'
-        return super(Farm, self).create(vals_list)
     
     def get_area_unit_label(self, area_unit=None):
         """Get the translated label for an area unit at runtime"""

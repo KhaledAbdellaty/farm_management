@@ -52,7 +52,7 @@
                 <field name="daily_report_id"/>
             </xpath>
             <xpath expr="//filter[@name='by_product']" position="after">
-                <filter name="by_daily_report" string="Farm Operation" context="{'group_by':'daily_report_id'}" attrs="{'invisible': [('daily_report_id', '=', False)]}"/>
+                <filter name="by_daily_report" string="Farm Operation" context="{'group_by':'daily_report_id'}" invisible="not context.get('daily_report_id')"/>
             </xpath>
             <xpath expr="//filter[@name='done']" position="after">
                 <filter string="Farm Operations" name="farm_operations" domain="[('daily_report_id', '!=', False)]"/>

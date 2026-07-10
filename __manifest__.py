@@ -25,6 +25,7 @@
         'hr_timesheet',
         'web',
         'sale',
+        'sale_stock',
         'purchase',
         'product',
     ],
@@ -52,9 +53,6 @@
         'views/farm_menu.xml',
     ],
     'demo': [],
-    'installable': True,
-    'application': True,
-    'auto_install': False,
     'assets': {
         'web.assets_common': [
             # Include Chart.js for dashboard visualizations

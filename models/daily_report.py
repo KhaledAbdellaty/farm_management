@@ -11,17 +11,18 @@ class DailyReport(models.Model):
     _description = 'Daily Farm Operation Report'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date desc, id desc'
+    _check_company_auto = True
 
-    name = fields.Char(string='Reference', required=True, copy=False, readonly=True, 
+    name = fields.Char(string='Reference', required=True, copy=False, readonly=True,
                      default=lambda self: 'New')
     date = fields.Date(string='Date', required=True, default=fields.Date.today, tracking=True)
-    
-    user_id = fields.Many2one('res.users', string='Reported By', 
+
+    user_id = fields.Many2one('res.users', string='Reported By',
                             default=lambda self: self.env.user, tracking=True)
-    
+
     # Project and location information
-    project_id = fields.Many2one('farm.cultivation.project', string='Cultivation Project', 
-                              required=True, tracking=True, ondelete='cascade')
+    project_id = fields.Many2one('farm.cultivation.project', string='Cultivation Project',
+                              required=True, tracking=True, ondelete='cascade', check_company=True)
     farm_id = fields.Many2one('farm.farm', related='project_id.farm_id', 
                            string='Farm', store=True, readonly=True)
     field_id = fields.Many2one('farm.field', related='project_id.field_id', 
@@ -94,7 +95,8 @@ class DailyReport(models.Model):
     
     # Inventory tracking
     stock_move_ids = fields.One2many('stock.move', 'daily_report_id', string='Stock Moves')
-    stock_picking_id = fields.Many2one('stock.picking', string='Inventory Operation')
+    stock_picking_id = fields.Many2one('stock.picking', string='Inventory Operation',
+                                     check_company=True)
     
     # Analytic accounting
     analytic_line_ids = fields.One2many('account.analytic.line', 'daily_report_id', 
@@ -210,7 +212,6 @@ class DailyReport(models.Model):
         all_product_lines = self.labor_machinery_lines + self.other_product_lines
         if all_product_lines:
             self.cost_amount = sum(line.product_id.standard_price * line.quantity for line in all_product_lines)
-    #TODO DELETE below method 
     @api.onchange('operation_type')
     def _onchange_operation_type(self):
         """Auto-update project state based on operation type if needed"""
@@ -290,17 +291,6 @@ class DailyReport(models.Model):
                             product['available'], product['uom']
                         )
                     raise ValidationError(error_message)
-            
-            # FIRST: Set state to confirmed
-            # _logger.info(f"DEBUG: Setting state to confirmed for report {report.name}")
-            # try:
-            #     report.with_context(force_write=True).write({'state': 'confirmed'})
-            #     _logger.info(f"DEBUG: State successfully updated to: {report.state}")
-            # except Exception as e:
-            #     _logger.error(f"DEBUG: Failed to update state: {str(e)}")
-            #     # Try without context
-            #     report.write({'state': 'confirmed'})
-            #     _logger.info(f"DEBUG: State updated without context to: {report.state}")
             
             # SECOND: Generate vendor bills for labor and machinery services
             generated_bills = []
@@ -1245,6 +1235,11 @@ class DailyReportLine(models.Model):
         """
         self = self.with_context(force_write=True)
 
+        # ponytail: cache moves/valuation-layers per report_id instead of
+        # re-searching per line - a report's lines all share the same moves.
+        moves_by_report = {}
+        layers_by_move = {}
+
         for line in self:
             # ── Labor / machinery (PO-backed) ────────────────────────────────
             if line.line_type == 'labor_machinery':
@@ -1265,15 +1260,30 @@ class DailyReportLine(models.Model):
             # SVL is created at picking validation and frozen; it is never
             # affected by later AVCO recalculations, making it the only source
             # that stays consistent with the analytic entry amount.
-            moves = self.env['stock.move'].search([
-                ('daily_report_id', '=', line.report_id.id),
-                ('product_id', '=', line.product_id.id),
-                ('state', '=', 'done'),
-            ])
-            if moves:
-                layers = self.env['stock.valuation.layer'].search([
-                    ('stock_move_id', 'in', moves.ids),
+            report_id = line.report_id.id
+            if report_id not in moves_by_report:
+                all_moves = self.env['stock.move'].search([
+                    ('daily_report_id', '=', report_id),
+                    ('state', '=', 'done'),
                 ])
+                by_product = {}
+                for move in all_moves:
+                    by_product.setdefault(move.product_id.id, self.env['stock.move'])
+                    by_product[move.product_id.id] |= move
+                moves_by_report[report_id] = by_product
+
+                all_layers = self.env['stock.valuation.layer'].search([
+                    ('stock_move_id', 'in', all_moves.ids),
+                ])
+                for layer in all_layers:
+                    layers_by_move.setdefault(layer.stock_move_id.id, self.env['stock.valuation.layer'])
+                    layers_by_move[layer.stock_move_id.id] |= layer
+
+            moves = moves_by_report[report_id].get(line.product_id.id, self.env['stock.move'])
+            if moves:
+                layers = self.env['stock.valuation.layer']
+                for move in moves:
+                    layers |= layers_by_move.get(move.id, self.env['stock.valuation.layer'])
                 if layers:
                     line.actual_cost = sum(abs(layer.value) for layer in layers)
                     continue
