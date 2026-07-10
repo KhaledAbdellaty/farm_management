@@ -279,6 +279,46 @@ class TestSecurityRules(TransactionCase):
         ])
         self.assertEqual(visible, farm_invoice)
 
+    def test_farm_accountant_only_sees_journal_entries_linked_to_farm_sale_orders(self):
+        # Regression test: account_move_farm_rule's `groups` only listed
+        # group_farm_user, even though group_farm_accountant has its own
+        # read-only ACL grant on account.move (access_account_move_farm_accountant)
+        # and is documented as a "read-only financial view of farm operations".
+        # Without the rule covering this group too, a user with ONLY
+        # group_farm_accountant could read every journal entry/vendor bill in
+        # the company, not just farm-linked ones.
+        farm_accountant = self.env['res.users'].create({
+            'name': 'Farm Accountant Test',
+            'login': 'farm_accountant_security_test',
+            'groups_id': [(6, 0, [self.env.ref('farm_management.group_farm_accountant').id])],
+        })
+        product = self.env['product.product'].create({
+            'name': 'Sec Test Accountant Crop', 'type': 'consu', 'is_storable': True,
+        })
+        order = self.env['sale.order'].create({
+            'partner_id': self.partner.id,
+            'cultivation_project_id': self.project.id,
+        })
+        order_line = self.env['sale.order.line'].create({
+            'order_id': order.id, 'product_id': product.id, 'product_uom_qty': 1.0,
+        })
+        unrelated_invoice = self.env['account.move'].create({
+            'move_type': 'out_invoice', 'partner_id': self.partner.id,
+        })
+        farm_invoice = self.env['account.move'].create({
+            'move_type': 'out_invoice',
+            'partner_id': self.partner.id,
+            'invoice_line_ids': [(0, 0, {
+                'product_id': product.id, 'quantity': 1.0, 'price_unit': 10.0,
+                'sale_line_ids': [(6, 0, [order_line.id])],
+            })],
+        })
+
+        visible = self.env['account.move'].with_user(farm_accountant).search([
+            ('id', 'in', (unrelated_invoice | farm_invoice).ids),
+        ])
+        self.assertEqual(visible, farm_invoice)
+
     def test_farm_user_cannot_create_harvest_batch_receipt(self):
         # A plain farm_user (not manager) lacks stock.group_stock_user, so
         # the underlying stock-module permission checks correctly deny this
