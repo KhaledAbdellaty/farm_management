@@ -53,21 +53,5 @@
         'views/farm_menu.xml',
     ],
     'demo': [],
-    'assets': {
-        'web.assets_common': [
-            # Include Chart.js for dashboard visualizations
-            # 'farm_management/static/vendor/chart.min.js',
-        ],
-        'web.assets_backend': [
-            # Farm management styles
-            # 'farm_management/static/src/scss/farm_management.scss',
-            
-            # Dashboard component files
-            # 'farm_management/static/src/components/dashboard/farm_dashboard.scss',
-            # 'farm_management/static/src/components/dashboard/farm_dashboard.js',
-            # 'farm_management/static/src/components/dashboard/farm_dashboard.xml',
-            # 'farm_management/static/src/components/dashboard/dashboard_loader.js',
-        ]
-    },
     'images': ['static/description/icon.png'],
 }
