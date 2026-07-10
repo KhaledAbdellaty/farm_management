@@ -1,3 +1,4 @@
+from odoo.exceptions import UserError
 from odoo.tests import TransactionCase, tagged
 
 
@@ -56,3 +57,17 @@ class TestFarmFieldBootstrap(TransactionCase):
         })
         field.write({'name': 'Renamed Field'})
         self.assertEqual(field.name, 'Renamed Field')
+
+    def test_crop_rejects_product_from_different_company(self):
+        # Regression: farm.crop.product_id had no check_company=True, so a
+        # crop could be linked to a product from a different company.
+        company2 = self.env['res.company'].create({'name': 'Bootstrap Test Other Co'})
+        other_product = self.env['product.product'].create({
+            'name': 'Other Co Product', 'type': 'consu', 'is_storable': True,
+            'company_id': company2.id,
+        })
+        with self.assertRaises(UserError):
+            self.env['farm.crop'].create({
+                'name': 'Cross Company Crop Test',
+                'product_id': other_product.id,
+            })

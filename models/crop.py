@@ -10,6 +10,7 @@ class Crop(models.Model):
     _description = 'Crop'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'name'
+    _check_company_auto = True
 
     name = fields.Char(string='Crop Name', required=True, tracking=True, translate=True)
     code = fields.Char(string='Crop Code', required=True, tracking=True, readonly=True, default=lambda self: 'New')
@@ -31,6 +32,7 @@ class Crop(models.Model):
         required=False,  # Not required on input as we'll auto-create it
         tracking=True,
         readonly=False,  # Not readonly in the model, only in the view
+        check_company=True,
         help="The product associated with this crop for inventory and sales - auto-created on save"
     )
     
