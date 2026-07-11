@@ -248,10 +248,11 @@ class CropBOMLine(models.Model):
             # Try to find farms that have cultivation projects for this crop
             farm_location_id = False
 
-            crop_key = line.bom_id.crop_id.id
+            crop_key = (line.bom_id.crop_id.id, line.bom_id.company_id.id)
             if crop_key not in project_cache:
                 project_cache[crop_key] = self.env['farm.cultivation.project'].search([
-                    ('crop_id', '=', crop_key)
+                    ('crop_id', '=', crop_key[0]),
+                    ('company_id', '=', crop_key[1]),
                 ], limit=1)
             projects = project_cache[crop_key]
 
