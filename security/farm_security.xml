@@ -30,7 +30,11 @@
         <record id="group_farm_manager" model="res.groups">
             <field name="name">Farm Manager</field>
             <field name="category_id" ref="module_category_farm_management"/>
-            <field name="implied_ids" eval="[(4, ref('group_farm_user'))]"/>
+            <!-- Implies stock.group_stock_user so internal stock-module checks
+                 (reordering-rule scheduler, valuation, etc.) pass consistently for
+                 farm managers performing real inventory operations (harvest
+                 receipts) instead of patching each custom ACL row individually. -->
+            <field name="implied_ids" eval="[(4, ref('group_farm_user')), (4, ref('stock.group_stock_user'))]"/>
             <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
         </record>
 
@@ -72,10 +76,22 @@
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
 
+        <record id="bom_line_comp_rule" model="ir.rule">
+            <field name="name">Crop BOM Line multi-company rule</field>
+            <field name="model_id" ref="model_farm_crop_bom_line"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
         <record id="daily_report_comp_rule" model="ir.rule">
             <field name="name">Daily Report multi-company rule</field>
             <field name="model_id" ref="model_farm_daily_report"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="daily_report_line_comp_rule" model="ir.rule">
+            <field name="name">Daily Report Line multi-company rule</field>
+            <field name="model_id" ref="model_farm_daily_report_line"/>
+            <field name="domain_force">['|', ('report_id.company_id', '=', False), ('report_id.company_id', 'in', company_ids)]</field>
         </record>
 
         <record id="cost_analysis_comp_rule" model="ir.rule">
@@ -83,5 +99,76 @@
             <field name="model_id" ref="model_farm_cost_analysis"/>
             <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
         </record>
+
+        <record id="harvest_batch_comp_rule" model="ir.rule">
+            <field name="name">Harvest Batch multi-company rule</field>
+            <field name="model_id" ref="model_farm_harvest_batch"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+        </record>
+
+        <!--
+            Scoping rules below narrow farm_user/farm_manager access on shared core models
+            to only the records tied to farm operations, instead of every record in the
+            system. These add `groups` so they don't affect non-farm users of these models.
+        -->
+        <record id="sale_order_farm_rule" model="ir.rule">
+            <field name="name">Sale Order restricted to cultivation projects (Farm)</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="domain_force">[('cultivation_project_id', '!=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
+        </record>
+
+        <!-- ROLLOUT NOTE: this record already existed on installed databases before
+             the group_farm_accountant addition below (2026-07-10). Because this whole
+             file is wrapped in noupdate="1", a plain `-u farm_management` on an
+             already-installed database will NOT re-apply the `groups` field change to
+             this existing record — it requires a manual ORM write
+             (env.ref('farm_management.account_move_farm_rule').write({'groups': [...]}))
+             on each real database, same as the other noupdate-trapped rule fixes made
+             earlier today. Fresh installs are unaffected. -->
+        <record id="account_move_farm_rule" model="ir.rule">
+            <field name="name">Journal Entry restricted to daily reports or farm sale orders (Farm)</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="domain_force">['|', ('daily_report_id', '!=', False), ('invoice_line_ids.sale_line_ids.order_id.cultivation_project_id', '!=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_farm_user')), (4, ref('group_farm_accountant'))]"/>
+        </record>
+
+        <record id="stock_move_farm_rule" model="ir.rule">
+            <field name="name">Stock Move restricted to daily reports, harvest batches, or farm sale orders (Farm)</field>
+            <field name="model_id" ref="stock.model_stock_move"/>
+            <field name="domain_force">['|', '|', ('daily_report_id', '!=', False), ('harvest_batch_id', '!=', False), ('sale_line_id.order_id.cultivation_project_id', '!=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
+        </record>
+
+        <!-- perm_create and perm_write are deliberately False: farm_management's own
+             code (harvest_batch.py, daily_report.py) creates the picking FIRST and links
+             its moves afterward via move_id.picking_id, so move_ids is always empty at
+             the moment the picking is created — and core stock.picking.create() itself
+             writes to the record (scheduled_date) before that linking happens too. A
+             create/write-time domain check here would always fail and block the picking
+             from ever being created, even by its own legitimate flow. Read/unlink are
+             still fully enforced once the picking's moves exist, which is what actually
+             matters for visibility (the create/write ACL grant is still scoped to
+             group_farm_user in ir.model.access.csv). -->
+        <record id="stock_picking_farm_rule" model="ir.rule">
+            <field name="name">Stock Picking restricted to daily reports, harvest batches, or farm sale orders (Farm)</field>
+            <field name="model_id" ref="stock.model_stock_picking"/>
+            <field name="domain_force">['|', '|', '|', ('move_ids.daily_report_id', '!=', False), ('move_ids.harvest_batch_id', '!=', False), ('sale_id.cultivation_project_id', '!=', False), ('move_ids.sale_line_id.order_id.cultivation_project_id', '!=', False)]</field>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_write" eval="False"/>
+            <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
+        </record>
+
+        <record id="stock_move_line_farm_rule" model="ir.rule">
+            <field name="name">Stock Move Line restricted to daily reports, harvest batches, or farm sale orders (Farm)</field>
+            <field name="model_id" ref="stock.model_stock_move_line"/>
+            <field name="domain_force">['|', '|', ('daily_report_id', '!=', False), ('move_id.harvest_batch_id', '!=', False), ('move_id.sale_line_id.order_id.cultivation_project_id', '!=', False)]</field>
+            <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
+        </record>
+
+        <!-- ponytail: purchase.order has no reverse link field to scope a rule on
+             (only farm.daily.report.line -> purchase_order_id exists); daily_report.py's
+             onchange/domain logic already gates which POs a farm user picks. Add a
+             one2many + domain_force here if a farm user is ever seen editing unrelated POs. -->
     </data>
 </odoo>

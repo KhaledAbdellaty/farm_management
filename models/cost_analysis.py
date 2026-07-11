@@ -10,12 +10,17 @@ class CostAnalysis(models.Model):
     _description = 'Farm Cost Analysis'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'date desc, id desc'
+    _check_company_auto = True
 
     name = fields.Char(string='Reference', required=True, copy=False, readonly=True,
                      default=lambda self: _('New'))
     date = fields.Date(string='Date', required=True, default=fields.Date.today, tracking=True)
 
     # Project and location information
+    # ponytail: no check_company here — this model's own company_id is
+    # related='project_id.company_id' (derived FROM this field), so the same
+    # circular-domain issue as farm.cultivation.project.farm_id applies:
+    # zero projects would show on any new record for any company.
     project_id = fields.Many2one('farm.cultivation.project', string='Cultivation Project',
                               required=True, tracking=True, ondelete='cascade')
     farm_id = fields.Many2one('farm.farm', related='project_id.farm_id',
@@ -60,6 +65,7 @@ class CostAnalysis(models.Model):
         'product.product',
         string='Product / Service',
         tracking=True,
+        check_company=True,
         help='Optional. Product or service this cost relates to. '
              'Auto-fills description and unit of measure when selected.',
     )
@@ -79,8 +85,10 @@ class CostAnalysis(models.Model):
     uom_id = fields.Many2one('uom.uom', string='Unit of Measure', tracking=True)
 
     # Financial data
-    invoice_id = fields.Many2one('account.move', string='Invoice', tracking=True)
-    payment_id = fields.Many2one('account.payment', string='Payment', tracking=True)
+    invoice_id = fields.Many2one('account.move', string='Invoice', tracking=True,
+                               check_company=True)
+    payment_id = fields.Many2one('account.payment', string='Payment', tracking=True,
+                               check_company=True)
 
     # Analytical accounting — display reference only (analytic line is managed via analytic_line_id)
     analytic_account_id = fields.Many2one('account.analytic.account',
@@ -112,6 +120,7 @@ class CostAnalysis(models.Model):
         string='Financial Account',
         domain="[('deprecated', '=', False)]",
         tracking=True,
+        check_company=True,
         help='GL expense account for this cost. Auto-filled from the linked invoice '
              'or payment. Select manually when no invoice or payment is linked.',
     )
@@ -125,6 +134,7 @@ class CostAnalysis(models.Model):
         domain="[('deprecated', '=', False)]",
         tracking=True,
         groups='account.group_account_user',
+        check_company=True,
         help='Credit account for the generated journal entry '
              '(e.g. Accrued Expenses, Accounts Payable). '
              'Used only when no invoice or payment is linked.',
@@ -137,6 +147,7 @@ class CostAnalysis(models.Model):
         readonly=True,
         copy=False,
         ondelete='set null',
+        check_company=True,
         help='Journal entry automatically generated for this cost '
              'when no invoice or payment is linked.',
     )
@@ -347,62 +358,6 @@ class CostAnalysis(models.Model):
                     "Created analytic line %s for cost entry %s",
                     line.id, cost.name,
                 )
-
-    # ── One-time data repair ──────────────────────────────────────────────────
-
-    @api.model
-    def action_repair_invoice_analytic_duplicates(self):
-        """
-        Remove cost-analysis analytic lines that duplicate a posted invoice's
-        analytic line (Guard 1 in _sync_analytic_line).
-
-        Before the fix was in place, every farm.cost.analysis record with a
-        linked posted vendor bill had TWO analytic lines in the project account:
-          • one from _sync_analytic_line()  (no move_line_id)  ← ghost
-          • one from the posted bill         (move_line_id set) ← authoritative
-
-        This action finds and removes all remaining ghost lines.
-        Safe to run multiple times — already-cleaned databases are unaffected.
-        """
-        to_clean = self.search([
-            ('invoice_id.state', '=', 'posted'),
-            ('analytic_line_id', '!=', False),
-        ]).filtered(
-            lambda c: (
-                not c.analytic_line_id.move_line_id
-                # Only remove when the bill actually has its own analytic line
-                # for this project account; otherwise the cost-analysis line is
-                # the only entry and must be kept.
-                and c.invoice_id.line_ids.analytic_line_ids.filtered(
-                    lambda l: l.account_id == c.project_id.analytic_account_id
-                )
-            )
-        )
-
-        count = len(to_clean)
-        for cost in to_clean:
-            cost.analytic_line_id.unlink()
-            cost.with_context(skip_analytic_sync=True).write(
-                {'analytic_line_id': False}
-            )
-
-        _logger.info(
-            "Repair invoice analytic duplicates: removed %d ghost entries.", count
-        )
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Duplicates Removed'),
-                'message': _(
-                    '%(count)d ghost analytic entries removed. '
-                    'Gross Margin now matches Actual Cost.',
-                    count=count,
-                ) if count else _('No duplicates found. Database is already clean.'),
-                'type': 'success' if count else 'info',
-                'sticky': False,
-            },
-        }
 
     # ── Journal entry generation ──────────────────────────────────────────────
 

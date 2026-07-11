@@ -73,12 +73,10 @@ class BomApplyWizard(models.TransientModel):
             category_xml_id = ''
             if line.input_type_category_id:
                 # Try to find external ID for the category
-                category_data = self.env['ir.model.data'].sudo().search([
-                    ('model', '=', 'product.category'),
-                    ('res_id', '=', line.input_type_category_id.id)
-                ], limit=1)
-                if category_data:
-                    category_xml_id = category_data.name
+                xml_id = line.input_type_category_id.get_external_id().get(
+                    line.input_type_category_id.id)
+                if xml_id:
+                    category_xml_id = xml_id.split('.')[-1]
                     
             cost_type = category_to_cost_type.get(category_xml_id, 'other')
             

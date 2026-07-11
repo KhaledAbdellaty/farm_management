@@ -17,18 +17,18 @@
         </field>
     </record>
     
-    <!-- <record id="farm_product_stock_search_view" model="ir.ui.view">
+    <record id="farm_product_stock_search_view" model="ir.ui.view">
         <field name="name">product.product.stock.search.farm</field>
         <field name="model">product.product</field>
-        <field name="inherit_id" ref="stock.product_search_form_view"/>
+        <field name="inherit_id" ref="stock.product_search_form_view_stock_report"/>
         <field name="arch" type="xml">
-            <xpath expr="//filter[@name='consumable']" position="after">
+            <xpath expr="//filter[@name='real_stock_negative']" position="after">
                 <separator/>
                 <filter string="Agricultural Products" name="agricultural" domain="[('categ_id.name', '=', 'Agricultural')]"/>
                 <filter string="Farm Supplies" name="farm_supplies" domain="[('categ_id.name', 'in', ['Fertilizer', 'Pesticide', 'Seed', 'Labor Services', 'Machinery'])]"/>
             </xpath>
         </field>
-    </record> -->
+    </record>
 
     <!-- Inherit Stock Move Line View -->
     <record id="farm_stock_move_line_view" model="ir.ui.view">
@@ -38,11 +38,10 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="before">
                 <field name="move_id" invisible="1"/>
-                <field name="daily_report_id" string="Farm Operation" optional="show" invisible="context.get('daily_report_id', False) == False"/>
+                <field name="daily_report_id" string="Farm Operation" optional="show"/>
             </xpath>
         </field>
     </record>
-<!-- 
     <record id="farm_stock_move_line_search" model="ir.ui.view">
         <field name="name">stock.move.line.search.farm</field>
         <field name="model">stock.move.line</field>
@@ -51,14 +50,14 @@
             <xpath expr="//field[@name='product_id']" position="after">
                 <field name="daily_report_id"/>
             </xpath>
-            <xpath expr="//filter[@name='by_product']" position="after">
-                <filter name="by_daily_report" string="Farm Operation" context="{'group_by':'daily_report_id'}" attrs="{'invisible': [('daily_report_id', '=', False)]}"/>
+            <xpath expr="//filter[@name='groupby_product_id']" position="after">
+                <filter name="by_daily_report" string="Farm Operation" context="{'group_by':'daily_report_id'}"/>
             </xpath>
             <xpath expr="//filter[@name='done']" position="after">
                 <filter string="Farm Operations" name="farm_operations" domain="[('daily_report_id', '!=', False)]"/>
             </xpath>
         </field>
-    </record> -->
+    </record>
 
     <!-- Farm Inventory Action -->
     <record id="farm_action_product_stock" model="ir.actions.act_window">
@@ -66,7 +65,7 @@
         <field name="res_model">product.product</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="stock.product_product_stock_tree"/>
-        <field name="search_view_id" ref="stock.product_search_form_view_stock_report"/>
+        <field name="search_view_id" ref="farm_product_stock_search_view"/>
         <field name="context">{
             'search_default_agricultural': 1,
             'search_default_farm_supplies': 1

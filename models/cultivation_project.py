@@ -1,6 +1,5 @@
 from odoo import fields, models, api, _
 from odoo.exceptions import ValidationError
-from odoo.osv import expression
 from datetime import timedelta
 import logging
 
@@ -12,9 +11,11 @@ class CultivationProject(models.Model):
     _description = 'Cultivation Project'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'start_date desc, name'
+    _check_company_auto = True
 
     # Link to project.project instead of inheriting from it
-    project_id = fields.Many2one('project.project', string='Related Project', tracking=True)
+    project_id = fields.Many2one('project.project', string='Related Project', tracking=True,
+                               check_company=True)
 
     name = fields.Char(string='Project Name', required=True, tracking=True, translate=True)
     code = fields.Char(string='Project Code', required=True, tracking=True, readonly=True, default=lambda self: _('New'))
@@ -26,10 +27,17 @@ class CultivationProject(models.Model):
     actual_end_date = fields.Date(string='Actual End Date', tracking=True)
 
     # Farm and field information
+    # ponytail: no check_company here — this model's own company_id is
+    # related='farm_id.company_id' (derived FROM this field), so check_company
+    # on farm_id would inject a domain based on a company_id that can't
+    # resolve until farm_id is already set, showing zero farms on any new
+    # record for any company. Cross-company protection is still enforced via
+    # field_id/crop_id/crop_bom_id/analytic_account_id, which validate against
+    # company_id correctly once farm_id has been picked.
     farm_id = fields.Many2one('farm.farm', string='Farm', required=True,
                             tracking=True, ondelete='restrict')
     field_id = fields.Many2one('farm.field', string='Field', required=True,
-                             tracking=True, ondelete='restrict',
+                             tracking=True, ondelete='restrict', check_company=True,
                              domain="[('farm_id', '=', farm_id), "
                                    "('state', 'in', ['available', 'fallow'])]")
     field_area = fields.Float(related='field_id.area', string='Field Area',
@@ -39,10 +47,11 @@ class CultivationProject(models.Model):
 
     # Crop information
     crop_id = fields.Many2one('farm.crop', string='Crop', required=True,
-                            tracking=True, ondelete='restrict')
+                            tracking=True, ondelete='restrict', check_company=True)
 
     # BOM for crop inputs
     crop_bom_id = fields.Many2one('farm.crop.bom', string='Crop BOM', tracking=True,
+                                check_company=True,
                                 domain="[('crop_id', '=', crop_id)]")
 
     # Project stages
@@ -138,7 +147,7 @@ class CultivationProject(models.Model):
     # Analytic account
     analytic_account_id = fields.Many2one('account.analytic.account',
                                         string='Analytic Account',
-                                        tracking=True)
+                                        tracking=True, check_company=True)
 
     # Related tasks (from project.project inheritance)
     task_count = fields.Integer(compute='_compute_task_count')
@@ -602,15 +611,18 @@ class CultivationProject(models.Model):
     @api.depends('daily_report_ids.irrigation_duration', 'daily_report_ids.state')
     def _compute_total_irrigation_hours(self):
         """Calculate the total irrigation hours from confirmed and done daily reports"""
-        for project in self:
-            reports = self.env['farm.daily.report'].search([
-                ('project_id', '=', project.id),
+        groups = self.env['farm.daily.report']._read_group(
+            [
+                ('project_id', 'in', self.ids),
                 ('operation_type', '=', 'irrigation'),
                 ('state', 'in', ['confirmed', 'done']),
-            ])
-            project.total_irrigation_hours = sum(
-                report.irrigation_duration for report in reports
-            ) if reports else 0.0
+            ],
+            groupby=['project_id'],
+            aggregates=['irrigation_duration:sum'],
+        )
+        hours_by_project = {project.id: total for project, total in groups}
+        for project in self:
+            project.total_irrigation_hours = hours_by_project.get(project.id, 0.0)
 
     # ── Translation helpers ────────────────────────────────────────────────────
 

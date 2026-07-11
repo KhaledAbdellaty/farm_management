@@ -151,16 +151,18 @@ class CropBOMLine(models.Model):
     _name = 'farm.crop.bom.line'
     _description = 'Crop BOM Line'
     _order = 'sequence, id'
-    
+    _check_company_auto = True
+
     @api.model
     def _valid_field_parameter(self, field, name):
         """Allow 'tracking' parameter for fields in this model"""
         return name == 'tracking' or super()._valid_field_parameter(field, name)
 
     sequence = fields.Integer('Sequence', default=10)
-    bom_id = fields.Many2one('farm.crop.bom', string='BOM', required=True, 
+    bom_id = fields.Many2one('farm.crop.bom', string='BOM', required=True,
                           ondelete='cascade')
-    
+    company_id = fields.Many2one('res.company', related='bom_id.company_id', store=True)
+
     # Replace static selection with product category
     input_type_category_id = fields.Many2one(
         'product.category', 
@@ -180,10 +182,11 @@ class CropBOMLine(models.Model):
     )
     
     product_id = fields.Many2one(
-        'product.product', 
+        'product.product',
         string='Product',
-        required=True, 
+        required=True,
         tracking=True,
+        check_company=True,
         domain="[('categ_id', 'child_of', input_type_category_id)] if input_type_category_id else [('categ_id', 'child_of', parent_farm_category_id), ('categ_id.name', '!=', 'Agricultural')]",
     )
     name = fields.Char(related='product_id.name', string='Name', readonly=True, 
@@ -225,50 +228,61 @@ class CropBOMLine(models.Model):
     @api.depends('product_id', 'quantity')
     def _compute_available_stock(self):
         """Compute the quantity available in stock for this product and availability status"""
+        # ponytail: cache per (crop_id, company_id) instead of re-searching per line -
+        # neither search varies within a BOM's lines, only across BOMs.
+        project_cache = {}
+        warehouse_cache = {}
+
         for line in self:
             if not line.product_id or not line.bom_id.company_id:
                 line.available_stock = 0.0
                 line.product_availability = 'unavailable'
                 continue
-                
+
             # For service products, we always set them as available and skip stock computation
             if line.product_id.type == 'service':
                 line.available_stock = 0.0
                 line.product_availability = 'available'
                 continue
-                
+
             # Try to find farms that have cultivation projects for this crop
             farm_location_id = False
-            
-            # Search for farms with projects using this crop
-            projects = self.env['farm.cultivation.project'].search([
-                ('crop_id', '=', line.bom_id.crop_id.id)
-            ], limit=1)
-            
+
+            crop_key = (line.bom_id.crop_id.id, line.bom_id.company_id.id)
+            if crop_key not in project_cache:
+                project_cache[crop_key] = self.env['farm.cultivation.project'].search([
+                    ('crop_id', '=', crop_key[0]),
+                    ('company_id', '=', crop_key[1]),
+                ], limit=1)
+            projects = project_cache[crop_key]
+
             if projects and projects.farm_id and projects.farm_id.location_id:
                 farm_location_id = projects.farm_id.location_id.id
-            
+
             # Initialized to 0 in case we can't find any stock
             product_qty = 0.0
-            
+
             # If we found a specific farm location, check availability there
             if farm_location_id:
                 product_qty = line.product_id.with_context(location=farm_location_id).qty_available
-                
+
             if product_qty <= 0:
                 # If no stock in farm location, check warehouse stock
-                warehouse = self.env['stock.warehouse'].search(
-                    [('company_id', '=', line.bom_id.company_id.id)], limit=1)
+                company_key = line.bom_id.company_id.id
+                if company_key not in warehouse_cache:
+                    warehouse_cache[company_key] = self.env['stock.warehouse'].search(
+                        [('company_id', '=', company_key)], limit=1)
+                warehouse = warehouse_cache[company_key]
                 if warehouse and warehouse.lot_stock_id:
                     product_qty = line.product_id.with_context(
                         location=warehouse.lot_stock_id.id).qty_available
-            
+
             if product_qty <= 0:
                 # As a last resort, get overall company stock
                 product_qty = line.product_id.with_company(line.bom_id.company_id).qty_available
-                
+
             line.available_stock = product_qty
-            
+
             # Set the availability status based on required vs available quantity
             if line.quantity <= 0:
                 line.product_availability = 'available'
@@ -276,12 +290,6 @@ class CropBOMLine(models.Model):
                 line.product_availability = 'unavailable'
             elif product_qty < line.quantity:
                 line.product_availability = 'warning'  # Partially available
-            else:
-                line.product_availability = 'available'
-            if product_qty <= 0:
-                line.product_availability = 'unavailable'
-            elif product_qty < line.quantity:
-                line.product_availability = 'warning'
             else:
                 line.product_availability = 'available'
     
@@ -311,16 +319,3 @@ class CropBOMLine(models.Model):
     def _onchange_product_id(self):
         """Update input type category if not set but product has category"""
         self.input_type_category_id = self.product_id.categ_id.id if self.product_id else False
-        # if self.product_id and not self.input_type_category_id:
-        #     # Check if product's category is under farm management
-        #     farm_category = self.env['product.category'].search([('name', '=', 'Farm Management')], limit=1)
-        #     if farm_category:
-        #         # Find the immediate child of farm_category that is a parent of product's category
-        #         product_category = self.product_id.categ_id
-        #         while product_category:
-        #             if product_category.parent_id and product_category.parent_id.id == farm_category.id:
-        #                 self.input_type_category_id = product_category.id
-        #                 break
-        #             product_category = product_category.parent_id
-        #             if not product_category or not product_category.parent_id:
-        #                 break

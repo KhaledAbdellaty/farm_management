@@ -11,6 +11,7 @@ class FarmHarvestBatch(models.Model):
     _order = 'date desc, id desc'
     _inherit = ['mail.thread']
     _rec_name = 'display_name'
+    _check_company_auto = True
 
     project_id = fields.Many2one(
         'farm.cultivation.project', string='Cultivation Project',
@@ -29,7 +30,8 @@ class FarmHarvestBatch(models.Model):
         ('validated', 'Validated'),
     ], string='Status', default='draft', required=True, tracking=True)
 
-    picking_id = fields.Many2one('stock.picking', string='Stock Receipt', readonly=True, copy=False)
+    picking_id = fields.Many2one('stock.picking', string='Stock Receipt', readonly=True, copy=False,
+                               check_company=True)
     subtotal = fields.Monetary(string='Subtotal', compute='_compute_subtotal',
                                currency_field='currency_id', store=True)
 
@@ -198,6 +200,7 @@ class FarmHarvestBatch(models.Model):
             'company_id': project.company_id.id,
             'state': 'draft',
             'price_unit': self.price_unit,
+            'harvest_batch_id': self.id,
             'description_picking': (
                 f"{product.name} — batch harvest on {self.date} "
                 f"from field {project.field_id.name}"
@@ -375,3 +378,10 @@ class FarmHarvestBatch(models.Model):
                     "Validated batches are part of the stock history."
                 ) % {'date': batch.date, 'qty': batch.quantity, 'uom': batch.uom_id.name})
         return super().unlink()
+
+
+class StockMove(models.Model):
+    _inherit = 'stock.move'
+
+    harvest_batch_id = fields.Many2one('farm.harvest.batch', string='Harvest Batch',
+                                     index=True, ondelete='set null')
