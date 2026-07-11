@@ -17,8 +17,12 @@ class CostAnalysis(models.Model):
     date = fields.Date(string='Date', required=True, default=fields.Date.today, tracking=True)
 
     # Project and location information
+    # ponytail: no check_company here — this model's own company_id is
+    # related='project_id.company_id' (derived FROM this field), so the same
+    # circular-domain issue as farm.cultivation.project.farm_id applies:
+    # zero projects would show on any new record for any company.
     project_id = fields.Many2one('farm.cultivation.project', string='Cultivation Project',
-                              required=True, tracking=True, ondelete='cascade', check_company=True)
+                              required=True, tracking=True, ondelete='cascade')
     farm_id = fields.Many2one('farm.farm', related='project_id.farm_id',
                            string='Farm', store=True, readonly=True)
     field_id = fields.Many2one('farm.field', related='project_id.field_id',

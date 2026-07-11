@@ -27,8 +27,15 @@ class CultivationProject(models.Model):
     actual_end_date = fields.Date(string='Actual End Date', tracking=True)
 
     # Farm and field information
+    # ponytail: no check_company here — this model's own company_id is
+    # related='farm_id.company_id' (derived FROM this field), so check_company
+    # on farm_id would inject a domain based on a company_id that can't
+    # resolve until farm_id is already set, showing zero farms on any new
+    # record for any company. Cross-company protection is still enforced via
+    # field_id/crop_id/crop_bom_id/analytic_account_id, which validate against
+    # company_id correctly once farm_id has been picked.
     farm_id = fields.Many2one('farm.farm', string='Farm', required=True,
-                            tracking=True, ondelete='restrict', check_company=True)
+                            tracking=True, ondelete='restrict')
     field_id = fields.Many2one('farm.field', string='Field', required=True,
                              tracking=True, ondelete='restrict', check_company=True,
                              domain="[('farm_id', '=', farm_id), "
