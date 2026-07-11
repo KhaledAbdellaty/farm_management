@@ -38,7 +38,7 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='state']" position="before">
                 <field name="move_id" invisible="1"/>
-                <field name="daily_report_id" string="Farm Operation" optional="show" invisible="context.get('daily_report_id', False) == False"/>
+                <field name="daily_report_id" string="Farm Operation" optional="show"/>
             </xpath>
         </field>
     </record>
@@ -51,7 +51,7 @@
                 <field name="daily_report_id"/>
             </xpath>
             <xpath expr="//filter[@name='groupby_product_id']" position="after">
-                <filter name="by_daily_report" string="Farm Operation" context="{'group_by':'daily_report_id'}" invisible="not context.get('daily_report_id')"/>
+                <filter name="by_daily_report" string="Farm Operation" context="{'group_by':'daily_report_id'}"/>
             </xpath>
             <xpath expr="//filter[@name='done']" position="after">
                 <filter string="Farm Operations" name="farm_operations" domain="[('daily_report_id', '!=', False)]"/>
