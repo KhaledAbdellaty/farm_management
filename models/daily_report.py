@@ -1615,13 +1615,13 @@ class DailyReportLine(models.Model):
     @api.depends('line_type')
     def _compute_available_products(self):
         """Compute available products based on line type"""
-        for line in self:
-            if line.line_type == 'labor_machinery':
-                # Get products with available PO lines
-                product_ids = self._get_products_with_po_lines()
-                line.available_product_ids = [(6, 0, product_ids)]
-            else:
-                line.available_product_ids = [(5, 0, 0)]  # Clear the field
+        # ponytail: _get_products_with_po_lines() is company-wide and doesn't
+        # vary per line, so compute it once per batch instead of once per line.
+        labor_machinery_lines = self.filtered(lambda l: l.line_type == 'labor_machinery')
+        if labor_machinery_lines:
+            product_ids = labor_machinery_lines._get_products_with_po_lines()
+            labor_machinery_lines.available_product_ids = [(6, 0, product_ids)]
+        (self - labor_machinery_lines).available_product_ids = [(5, 0, 0)]
     
     @api.model
     def _get_products_with_po_lines(self):
