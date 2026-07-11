@@ -1,6 +1,6 @@
 {
     'name': 'Farm Management System',
-    'version': '18.0.1.1.2',
+    'version': '18.0.1.1.3',
     'summary': 'Comprehensive farm management for Odoo 18',
     'description': """
         This module provides a complete Farm Management System for Odoo 18.
@@ -40,7 +40,6 @@
         'data/farm_sequence.xml',
         'data/crop_sequence.xml',
         'data/product_category_data.xml',
-        'data/server_actions.xml',
         'views/farm_views.xml',
         'views/field_views.xml',
         'views/crop_views.xml',
@@ -48,7 +47,6 @@
         'views/crop_bom_views.xml',
         'views/daily_report_views.xml',
         'views/cost_analysis_views.xml',
-        'views/res_config_settings_views.xml',
         'views/farm_stock_views.xml',
         'views/farm_menu.xml',
     ],

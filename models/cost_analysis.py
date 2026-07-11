@@ -359,62 +359,6 @@ class CostAnalysis(models.Model):
                     line.id, cost.name,
                 )
 
-    # ── One-time data repair ──────────────────────────────────────────────────
-
-    @api.model
-    def action_repair_invoice_analytic_duplicates(self):
-        """
-        Remove cost-analysis analytic lines that duplicate a posted invoice's
-        analytic line (Guard 1 in _sync_analytic_line).
-
-        Before the fix was in place, every farm.cost.analysis record with a
-        linked posted vendor bill had TWO analytic lines in the project account:
-          • one from _sync_analytic_line()  (no move_line_id)  ← ghost
-          • one from the posted bill         (move_line_id set) ← authoritative
-
-        This action finds and removes all remaining ghost lines.
-        Safe to run multiple times — already-cleaned databases are unaffected.
-        """
-        to_clean = self.search([
-            ('invoice_id.state', '=', 'posted'),
-            ('analytic_line_id', '!=', False),
-        ]).filtered(
-            lambda c: (
-                not c.analytic_line_id.move_line_id
-                # Only remove when the bill actually has its own analytic line
-                # for this project account; otherwise the cost-analysis line is
-                # the only entry and must be kept.
-                and c.invoice_id.line_ids.analytic_line_ids.filtered(
-                    lambda l: l.account_id == c.project_id.analytic_account_id
-                )
-            )
-        )
-
-        count = len(to_clean)
-        for cost in to_clean:
-            cost.analytic_line_id.unlink()
-            cost.with_context(skip_analytic_sync=True).write(
-                {'analytic_line_id': False}
-            )
-
-        _logger.info(
-            "Repair invoice analytic duplicates: removed %d ghost entries.", count
-        )
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Duplicates Removed'),
-                'message': _(
-                    '%(count)d ghost analytic entries removed. '
-                    'Gross Margin now matches Actual Cost.',
-                    count=count,
-                ) if count else _('No duplicates found. Database is already clean.'),
-                'type': 'success' if count else 'info',
-                'sticky': False,
-            },
-        }
-
     # ── Journal entry generation ──────────────────────────────────────────────
 
     def _create_journal_entry(self):

@@ -158,32 +158,5 @@
               action="action_farm_cost_analysis"
               sequence="10"/>
     
-    <!-- Configuration Sub-menu -->
-    <menuitem id="menu_farm_config"
-              name="Configuration"
-              parent="menu_farm_root"
-              sequence="100"
-              groups="group_farm_manager"/>
-
-    <!-- Configuration > Tools -->
-    <menuitem id="menu_farm_tools"
-              name="Tools"
-              parent="menu_farm_config"
-              sequence="90"
-              groups="group_farm_manager"/>
-
-    <menuitem id="menu_farm_repair_analytic"
-              name="Repair Duplicate Analytic Entries"
-              parent="menu_farm_tools"
-              action="action_repair_duplicate_analytic_entries"
-              sequence="10"
-              groups="group_farm_manager"/>
-
-    <menuitem id="menu_farm_repair_invoice_analytic"
-              name="Repair Invoice-Backed Analytic Duplicates"
-              parent="menu_farm_tools"
-              action="action_repair_invoice_analytic_duplicates"
-              sequence="20"
-              groups="group_farm_manager"/>
 
 </odoo>

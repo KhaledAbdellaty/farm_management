@@ -940,7 +940,13 @@ class DailyReport(models.Model):
                 'product_uom_id': product_id.uom_id.id,
                 'account_id': account_id,
                 'analytic_distribution': analytic_distribution,
-                'tax_ids': [(6, 0, product_id.supplier_taxes_id.ids)],
+                # ponytail: shared (company_id=False) products can carry
+                # supplier taxes from more than one company at once; only
+                # the bill's own company's taxes are valid here, otherwise
+                # check_company fails later (e.g. on reset to draft).
+                'tax_ids': [(6, 0, product_id.supplier_taxes_id.filtered(
+                    lambda t: not t.company_id or t.company_id == self.company_id
+                ).ids)],
                 'purchase_line_id': line.purchase_order_line_id.id,  # Link to PO line
             }
             
@@ -980,77 +986,6 @@ class DailyReport(models.Model):
         _logger.info(f"Created vendor bill {vendor_bill.name} for {vendor.name} from daily report {self.name}")
 
         return vendor_bill
-
-    # ── One-time data repair ──────────────────────────────────────────────────
-
-    @api.model
-    def action_repair_duplicate_analytic_entries(self):
-        """
-        Remove ghost analytic entries created by _create_analytic_entries()
-        for PO-backed labor/machinery lines before the duplication fix was applied.
-
-        Before the fix, marking a Daily Report as Done produced a direct analytic
-        line (daily_report_id set) for every labor/machinery line — even those
-        backed by a Purchase Order.  When the accountant later posted the vendor
-        bill, Odoo created a second analytic line linked to the bill move line
-        (move_line_id set), resulting in a double-counted cost.
-
-        Since the fix is now live, PO-backed labor/machinery lines no longer
-        generate analytic entries directly — entries are only created when the
-        vendor bill is posted.  Any remaining ghost entries (move_line_id = False,
-        daily_report_id set) for PO-backed lines are therefore safe to delete
-        unconditionally; waiting for a bill-backed entry to appear first would
-        leave the ghost in place and cause duplication when the bill is later posted.
-
-        Safe to run multiple times — already-cleaned databases are unaffected.
-        """
-        AnalyticLine = self.env['account.analytic.line']
-        to_delete = AnalyticLine
-
-        done_reports = self.search([('state', '=', 'done')])
-        for report in done_reports:
-            for line in report.labor_machinery_lines:
-                if not line.purchase_order_line_id:
-                    continue
-
-                # DR-created ghost entries for this report + product.
-                # Entries linked to a journal item (move_line_id set) are
-                # GL-backed (came from a vendor bill) and must not be touched.
-                dr_lines = AnalyticLine.search([
-                    ('daily_report_id', '=', report.id),
-                    ('product_id', '=', line.product_id.id),
-                    ('move_line_id', '=', False),
-                ])
-                if not dr_lines:
-                    continue
-
-                # The bug is fixed: PO-backed lines no longer generate direct
-                # DR analytic entries, so any ghost entry found here is safe to
-                # delete unconditionally.  Keeping it until a bill is posted
-                # would cause duplication the moment the bill is later posted.
-                to_delete |= dr_lines
-
-        count = len(to_delete)
-        if to_delete:
-            to_delete.unlink()
-            _logger.info(
-                "Repair duplicate analytic entries: removed %d ghost entries.", count
-            )
-
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'title': _('Analytic Entries Repaired'),
-                'message': _(
-                    '%(count)d duplicate analytic entries removed. '
-                    'Gross Margin figures are now accurate.',
-                    count=count,
-                ) if count else _('No duplicate entries found. Database is already clean.'),
-                'type': 'success' if count else 'info',
-                'sticky': False,
-            },
-        }
 
 
 class StockMove(models.Model):
