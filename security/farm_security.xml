@@ -118,11 +118,19 @@
             <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
         </record>
 
+        <!-- ROLLOUT NOTE: this record already existed on installed databases before
+             the group_farm_accountant addition below (2026-07-10). Because this whole
+             file is wrapped in noupdate="1", a plain `-u farm_management` on an
+             already-installed database will NOT re-apply the `groups` field change to
+             this existing record — it requires a manual ORM write
+             (env.ref('farm_management.account_move_farm_rule').write({'groups': [...]}))
+             on each real database, same as the other noupdate-trapped rule fixes made
+             earlier today. Fresh installs are unaffected. -->
         <record id="account_move_farm_rule" model="ir.rule">
             <field name="name">Journal Entry restricted to daily reports or farm sale orders (Farm)</field>
             <field name="model_id" ref="account.model_account_move"/>
             <field name="domain_force">['|', ('daily_report_id', '!=', False), ('invoice_line_ids.sale_line_ids.order_id.cultivation_project_id', '!=', False)]</field>
-            <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
+            <field name="groups" eval="[(4, ref('group_farm_user')), (4, ref('group_farm_accountant'))]"/>
         </record>
 
         <record id="stock_move_farm_rule" model="ir.rule">
