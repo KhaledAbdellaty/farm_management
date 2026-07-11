@@ -1,8 +1,4 @@
-from odoo import fields, models, api, _
-import logging
-from datetime import datetime
-
-_logger = logging.getLogger(__name__)
+from odoo import fields, models, api
 
 class StockMoveLine(models.Model):
     _inherit = 'stock.move.line'
