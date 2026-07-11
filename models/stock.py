@@ -1,8 +1,4 @@
-from odoo import fields, models, api, _
-import logging
-from datetime import datetime
-
-_logger = logging.getLogger(__name__)
+from odoo import fields, models, api
 
 class StockMoveLine(models.Model):
     _inherit = 'stock.move.line'
@@ -19,15 +15,20 @@ class ProductProduct(models.Model):
     @api.depends('stock_move_ids.daily_report_id')
     def _compute_farm_usage(self):
         """Compute if product is used in farm operations and the last usage date"""
-        for product in self:
-            farm_moves = self.env['stock.move'].search([
-                ('product_id', '=', product.id),
+        groups = self.env['stock.move']._read_group(
+            [
+                ('product_id', 'in', self.ids),
                 ('daily_report_id', '!=', False),
-                ('state', '=', 'done')
-            ], order='date desc', limit=1)
-            
-            product.is_used_in_farm = bool(farm_moves)
-            product.last_farm_usage_date = farm_moves.date.date() if farm_moves else False
+                ('state', '=', 'done'),
+            ],
+            groupby=['product_id'],
+            aggregates=['date:max'],
+        )
+        last_usage_by_product = {product.id: last_date for product, last_date in groups}
+        for product in self:
+            last_date = last_usage_by_product.get(product.id)
+            product.is_used_in_farm = bool(last_date)
+            product.last_farm_usage_date = last_date.date() if last_date else False
 
 class AccountAnalyticLine(models.Model):
     _inherit = 'account.analytic.line'
