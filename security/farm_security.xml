@@ -134,9 +134,9 @@
         </record>
 
         <record id="stock_move_farm_rule" model="ir.rule">
-            <field name="name">Stock Move restricted to daily reports, harvest batches, or farm sale orders (Farm)</field>
+            <field name="name">Stock Move restricted to daily reports, harvest batches, farm sale orders, or purchase orders (Farm)</field>
             <field name="model_id" ref="stock.model_stock_move"/>
-            <field name="domain_force">['|', '|', ('daily_report_id', '!=', False), ('harvest_batch_id', '!=', False), ('sale_line_id.order_id.cultivation_project_id', '!=', False)]</field>
+            <field name="domain_force">['|', '|', '|', ('daily_report_id', '!=', False), ('harvest_batch_id', '!=', False), ('sale_line_id.order_id.cultivation_project_id', '!=', False), ('purchase_line_id', '!=', False)]</field>
             <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
         </record>
 
@@ -160,9 +160,9 @@
         </record>
 
         <record id="stock_move_line_farm_rule" model="ir.rule">
-            <field name="name">Stock Move Line restricted to daily reports, harvest batches, or farm sale orders (Farm)</field>
+            <field name="name">Stock Move Line restricted to daily reports, harvest batches, farm sale orders, or purchase orders (Farm)</field>
             <field name="model_id" ref="stock.model_stock_move_line"/>
-            <field name="domain_force">['|', '|', ('daily_report_id', '!=', False), ('move_id.harvest_batch_id', '!=', False), ('move_id.sale_line_id.order_id.cultivation_project_id', '!=', False)]</field>
+            <field name="domain_force">['|', '|', '|', ('daily_report_id', '!=', False), ('move_id.harvest_batch_id', '!=', False), ('move_id.sale_line_id.order_id.cultivation_project_id', '!=', False), ('move_id.purchase_line_id', '!=', False)]</field>
             <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
         </record>
 
