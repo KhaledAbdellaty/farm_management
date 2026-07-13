@@ -54,15 +54,16 @@ class SaleOrder(models.Model):
 
     def action_confirm(self):
         """
-        After confirming the sale order, ensure every line linked to a
-        cultivation project carries the correct analytic distribution so that
-        invoiced amounts flow into the Analytic Account Gross Margin.
+        Before confirming (and thereby potentially locking) the sale order,
+        ensure every line linked to a cultivation project carries the correct
+        analytic distribution so that invoiced amounts flow into the
+        Analytic Account Gross Margin. Must run before super() because a
+        locked order forbids writing analytic_distribution on its lines.
         """
-        result = super().action_confirm()
         farm_orders = self.filtered('cultivation_project_id')
         if farm_orders:
             farm_orders._apply_cultivation_analytic_distribution()
-        return result
+        return super().action_confirm()
 
     # ── Display helper ────────────────────────────────────────────────────────
 
