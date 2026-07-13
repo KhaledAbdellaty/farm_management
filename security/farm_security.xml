@@ -151,9 +151,9 @@
              matters for visibility (the create/write ACL grant is still scoped to
              group_farm_user in ir.model.access.csv). -->
         <record id="stock_picking_farm_rule" model="ir.rule">
-            <field name="name">Stock Picking restricted to daily reports, harvest batches, or farm sale orders (Farm)</field>
+            <field name="name">Stock Picking restricted to daily reports, harvest batches, farm sale orders, or purchase orders (Farm)</field>
             <field name="model_id" ref="stock.model_stock_picking"/>
-            <field name="domain_force">['|', '|', '|', ('move_ids.daily_report_id', '!=', False), ('move_ids.harvest_batch_id', '!=', False), ('sale_id.cultivation_project_id', '!=', False), ('move_ids.sale_line_id.order_id.cultivation_project_id', '!=', False)]</field>
+            <field name="domain_force">['|', '|', '|', '|', ('move_ids.daily_report_id', '!=', False), ('move_ids.harvest_batch_id', '!=', False), ('sale_id.cultivation_project_id', '!=', False), ('move_ids.sale_line_id.order_id.cultivation_project_id', '!=', False), ('move_ids.purchase_line_id', '!=', False)]</field>
             <field name="perm_create" eval="False"/>
             <field name="perm_write" eval="False"/>
             <field name="groups" eval="[(4, ref('group_farm_user'))]"/>
